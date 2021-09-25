@@ -2,6 +2,8 @@ from core.mixins import AbstractBaseModel, BlogMixin, TimestampMixin
 from tortoise import fields, models
 from tortoise.contrib.pydantic import pydantic_model_creator
 
+from .managers import CategoryManager, PostManager
+
 
 class Post(AbstractBaseModel, BlogMixin, TimestampMixin):
     excerpt = fields.TextField()
@@ -15,6 +17,7 @@ class Post(AbstractBaseModel, BlogMixin, TimestampMixin):
     class Meta:
         table = "posts"
         ordering = ["-created"]
+        manager = PostManager()
     
     def __str__(self):
         return self.title
@@ -31,6 +34,7 @@ class Category(AbstractBaseModel, BlogMixin, TimestampMixin):
     class Meta:
         table = "categories"
         ordering = ["title"]
+        manager = CategoryManager()
     
     def __str__(self):
         return self.title
