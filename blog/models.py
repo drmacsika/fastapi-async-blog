@@ -2,7 +2,7 @@ from core.mixins import AbstractBaseModel, BlogMixin, TimestampMixin
 from tortoise import fields, models
 from tortoise.contrib.pydantic import pydantic_model_creator
 
-from .managers import CategoryManager, PostManager
+from managers import CategoryManager, PostManager
 
 
 class Post(AbstractBaseModel, BlogMixin, TimestampMixin):
@@ -23,7 +23,7 @@ class Post(AbstractBaseModel, BlogMixin, TimestampMixin):
         return self.title
     
 
-Post_Pydantic = pydantic_model_creator(Post, name="Post")
+Post_Pydantic = pydantic_model_creator(Post, name="Post", exclude=("active", "view_count", "read_length"))
 PostIn_Pydantic = pydantic_model_creator(
     Post, name="PostIn", exclude_readonly=True)
 
@@ -38,3 +38,8 @@ class Category(AbstractBaseModel, BlogMixin, TimestampMixin):
     
     def __str__(self):
         return self.title
+
+
+Category_Pydantic = pydantic_model_creator(Category, name="Category", exclude=("active"))
+CategoryIn_Pydantic = pydantic_model_creator(
+    Category, name="CategoryIn", exclude_readonly=True)
