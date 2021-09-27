@@ -17,7 +17,7 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from core.database import Base  # Here
+from core.base import Base  # Here
 
 target_metadata = Base.metadata # Here
 
@@ -25,6 +25,14 @@ target_metadata = Base.metadata # Here
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+# def get_url():
+#     user = os.getenv("POSTGRES_USER", "postgres")
+#     password = os.getenv("POSTGRES_PASSWORD", "")
+#     server = os.getenv("POSTGRES_SERVER", "db")
+#     db = os.getenv("POSTGRES_DB", "app")
+#     return f"postgresql://{user}:{password}@{server}/{db}"
 
 
 def run_migrations_offline():
