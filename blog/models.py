@@ -1,13 +1,13 @@
-from core.database import Base
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+# from core.database import Base
+# from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 
 
-class Post(Base):
-    __table__ = "post"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    excerpt = Column(String(150))
-    title = Column(String(100))
-    description = Column(String(250))
+# class Post(Base):
+#     __table__ = "post"
+#     id = Column(Integer, primary_key=True, autoincrement=True)
+#     # excerpt = Column(String(150))
+#     # title = Column(String(100))
+#     # description = Column(String(250))
     
     
     
