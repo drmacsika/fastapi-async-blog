@@ -7,7 +7,7 @@ class User(AbstractBaseModel, TimestampMixin):
     email = fields.CharField(max_length=250, unique=True)
     firstname = fields.CharField(max_length=50, null=False)
     lastname = fields.CharField(max_length=50, null=False)
-    token = fields.IntField(default=0)
+    token = fields.CharField(max_length=6, default=0)
     active = fields.BooleanField(default=False)
     staff = fields.BooleanField(default=False)
     admin = fields.BooleanField(default=False)
@@ -17,10 +17,19 @@ class User(AbstractBaseModel, TimestampMixin):
     async def get_user(cls, email):
         return cls.get(email=email)
     
-    def verify_token(self, token):
-        return True
+    def full_name(self) -> str:
+        if self.firstname or self.lastname:
+            return f"{self.name or ''} {self.family_name or ''}".strip()
+        return self.email
+
+    class PydanticMeta:
+        computed = ["full_name"]
+        # exclude = ["password_hash"]
+        
+    # def verify_otp(self, token):
+    #     return hotp.verify('316439', 1401) # => True
 
 
-User_Pydantic = pydantic_model_creator(User, "User")
-UserIn_Pydantic = pydantic_model_creator(User, "UserIn", exclude_readonly=True)
-UserOut_Pydantic = pydantic_model_creator(User, "userOut", exclude=("token", "id", "active", "created", "updated", "staff", "admin"))
+User_Pydantic = pydantic_model_creator(User, name="User")
+UserIn_Pydantic = pydantic_model_creator(User, name="UserIn", exclude_readonly=True)
+UserOut_Pydantic = pydantic_model_creator(User, name="userOut", exclude=("token", "id", "active", "created", "updated", "staff", "admin"))
