@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 517786f77c6e
+Revision ID: a18b2b45216b
 Revises: 
-Create Date: 2021-09-28 00:29:13.239062
+Create Date: 2021-09-28 00:53:11.380446
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ from core.database import Base
 
 
 # revision identifiers, used by Alembic.
-revision = '517786f77c6e'
+revision = 'a18b2b45216b'
 down_revision = None
 branch_labels = None
 depends_on = None
