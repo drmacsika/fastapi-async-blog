@@ -1,2 +1,2 @@
 # am-backend
-Backend of Archangel Macsika Blog.
+Backend of Archangel Macsika Portfolio and Blog.
