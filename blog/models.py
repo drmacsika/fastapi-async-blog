@@ -1,10 +1,13 @@
 from core.base import Base
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
+from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
+                        Text)
+from sqlalchemy.orm import relationship
 
 
 class Post(Base):
     __tablename__ = "posts"
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    categories = relationship("Category", back_populates="post")
     title = Column(String(length=100), index=True)
     description = Column(String(length=250), nullable=True)
     intro = Column(String(length=200), nullable=True)
@@ -21,6 +24,8 @@ class Post(Base):
 class Category(Base):
     __tablename__ = "categories"
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    post_id = Column(Integer, ForeignKey("posts.id"))
+    post = relationship("Post", back_populates="categories")
     title = Column(String(length=100), index=True)
     description = Column(String(length=250), nullable=True)
     slug = Column(String)
