@@ -18,3 +18,12 @@ class Post(Base):
 
 
 
+class Category(Base):
+    __tablename__ = "categories"
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    title = Column(String(length=100), index=True)
+    description = Column(String(length=250), nullable=True)
+    slug = Column(String)
+    active = Column(Boolean, default=False)
+    created = Column(DateTime)
+    updated = Column(DateTime)
