@@ -1,7 +1,28 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
+
+
+class CategoryBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    
+
+class CreateCategory(CategoryBase):
+    ...
+
+
+class Category(CategoryBase):
+    id: int
+    post_id: int
+    slug: str
+    active: bool
+    created: datetime
+    updated: datetime
+    
+    class Config:
+        orm_mode = True
 
 
 class PostBase(BaseModel):
@@ -9,6 +30,7 @@ class PostBase(BaseModel):
     description: Optional[str] = None
     intro: Optional[str] = None
     content: Optional[str] = ...
+    categories: List[Category] = None
 
 class CreatePost(PostBase):
     ...
