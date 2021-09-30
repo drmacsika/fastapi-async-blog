@@ -24,12 +24,11 @@ def get_settings():
     return Settings()
 
 settings = get_settings()
+
+# Postgres DB meta settings
 engine = create_async_engine(settings.SQLALCHEMY_DATABASE_URI, echo = True)
 async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
-
-
-# Postgres settings
 async def init_models():
     async with settings.engine.begin() as conn:
         # await conn.run_sync(Base.metadata.drop_all)
