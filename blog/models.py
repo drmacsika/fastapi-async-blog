@@ -1,8 +1,9 @@
-from core.base import Base
+from core.settings import settings
 from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
                         Text)
 from sqlalchemy.orm import relationship
 
+Base = settings.Base
 
 class Post(Base):
     __tablename__ = "posts"
