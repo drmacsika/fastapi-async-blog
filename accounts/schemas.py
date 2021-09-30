@@ -1,4 +1,5 @@
-from typing import List, Optional
+from datetime import datetime
+from typing import List
 
 from blog.models import Post
 from pydantic import BaseModel, EmailStr
@@ -26,6 +27,8 @@ class User(UserBase):
     staff: bool = False
     admin: bool = False
     active: bool = False
+    created: datetime
+    updated: datetime
     
     class Config:
         orm_mode = True
