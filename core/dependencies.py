@@ -6,14 +6,10 @@ from functools import lru_cache
 import pyotp
 from fastapi import Depends
 
-from settings import Settings
+from core.settings import settings
 
 
-@lru_cache()
-def get_settings():
-    return Settings()
-
-def generate_hotp(email: str, settings: Settings = Depends(get_settings)):
+def generate_hotp(email: str, settings: Settings = Depends(settings)):
     keygen = email+str(datetime.date(datetime.now()))+settings.SECRET_KEY
     key = base64.b32encode(keygen.encode())
     return pyotp.HOTP(key)

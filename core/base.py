@@ -1,5 +1,4 @@
-from sqlalchemy.ext.declarative import declarative_base
+from core.settings import settings
 
-Base = declarative_base()
-
-from blog.models import Post
+Base = settings.Base
+from blog.models import Category, Post
