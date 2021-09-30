@@ -11,7 +11,13 @@ class CategoryBase(BaseModel):
 
 class CreateCategory(CategoryBase):
     ...
+    
 
+class UpdateCategory(CategoryBase):
+    post_id: int
+    slug: str
+    active: bool
+    created: datetime
 
 class Category(CategoryBase):
     id: int
@@ -34,6 +40,13 @@ class PostBase(BaseModel):
 
 class CreatePost(PostBase):
     ...
+
+class UpdatePost(PostBase):
+    slug: str
+    read_length: int
+    view_count: int
+    active: bool
+    updated: datetime
 
 class Post(BaseModel):
     id: int

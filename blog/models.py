@@ -8,6 +8,8 @@ Base = settings.Base
 class Post(Base):
     __tablename__ = "posts"
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    author = relationship("User", back_populates="articles")
+    author_id = Column(Integer, ForeignKey("users.id"))
     categories = relationship("Category", back_populates="post")
     title = Column(String(length=100), index=True)
     description = Column(String(length=250), nullable=True)
