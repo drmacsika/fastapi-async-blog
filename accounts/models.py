@@ -11,10 +11,10 @@ class User(Base):
     __tablename__ = "users"
     
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    firstname = Column(String(), nullable=False)
-    lastname = Column(String(), nullable=False)
-    username = Column(String, nullable=False, unique=True)
-    email = Column(String, unique=True, index=True, nullable=False)
+    firstname = Column(String(length=100), nullable=False)
+    lastname = Column(String(length=100), nullable=False)
+    username = Column(String(length=100), nullable=False, unique=True)
+    email = Column(String(length=255), unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
     active = Column(Boolean, default=False)
     staff = Column(Boolean, default=False)
