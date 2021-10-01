@@ -1,5 +1,5 @@
 from core.settings import settings
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -10,12 +10,12 @@ class User(Base):
     
     __tablename__ = "users"
     
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement="auto")
     firstname = Column(String(length=100), nullable=False)
     lastname = Column(String(length=100), nullable=False)
     username = Column(String(length=100), nullable=False, unique=True)
     email = Column(String(length=255), unique=True, index=True, nullable=False)
-    password = Column(String, nullable=False)
+    password = Column(Text, nullable=False)
     active = Column(Boolean, default=False)
     staff = Column(Boolean, default=False)
     admin = Column(Boolean, default=False)
