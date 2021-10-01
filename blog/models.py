@@ -14,6 +14,7 @@ class Post(Base):
     description = Column(String(length=250), nullable=True)
     intro = Column(String(length=200), nullable=True)
     content = Column(Text)
+    post_image = Column(Text)
     slug = Column(String(length=255), nullable=False, unique=True)
     read_length = Column(Integer, default=0)
     view_count = Column(Integer, default=0)
