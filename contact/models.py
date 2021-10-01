@@ -9,7 +9,7 @@ class Contact(Base):
     
     __tablename__ = "contacts"
     
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement="auto")
     firstname = Column(String(100), nullable=False)
     lastname = Column(String(100), nullable=False)
     email = Column(String(255), index=True, nullable=False)
