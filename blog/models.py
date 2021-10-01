@@ -36,8 +36,8 @@ class Category(Base):
     description = Column(String(length=250), nullable=True)
     slug = Column(String(length=255), nullable=False, unique=True)
     active = Column(Boolean, default=False)
-    created = Column(DateTime)
-    updated = Column(DateTime)
+    created = Column(DateTime, server_default=func.now())
+    updated = Column(DateTime, onupdate=func.now())
     
     # Relationships
     post = relationship("Post", back_populates="categories")
