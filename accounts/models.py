@@ -24,10 +24,10 @@ class User(Base):
     
     # Relationships
     articles = relationship("Post", back_populates="author")
+    articles = relationship("Post", cascade="all,delete-orphan", back_populates="author", uselist=True,)
     
-    # posts = relationship(
-    #     "Recipe",
-    #     cascade="all,delete-orphan",
-    #     back_populates="submitter",
-    #     uselist=True,
-    # )
+    def __repr__(self) -> str:
+        return "<User %r %r>" % (self.firstname, self.lastname)
+    
+    def __str__(self) -> str:
+        return f"{self.firstname} {self.lastname}"
