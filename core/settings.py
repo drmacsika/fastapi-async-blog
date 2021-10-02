@@ -30,7 +30,7 @@ engine = create_async_engine(settings.SQLALCHEMY_DATABASE_URI, echo = True)
 async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 async def init_models():
-    async with settings.engine.begin() as conn:
+    async with engine.begin() as conn:
         # await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(settings.Base.metadata.create_all)
 

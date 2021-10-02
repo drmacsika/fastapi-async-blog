@@ -7,7 +7,10 @@ from sqlalchemy.sql import func
 Base = settings.Base
 
 class Post(Base):
+    """Models for blog posts"""
+    
     __tablename__ = "posts"
+    
     id = Column(Integer, primary_key=True, autoincrement="auto", index=True)
     author_id = Column(Integer, ForeignKey("users.id"))
     title = Column(String(length=100), index=True, nullable=False)
@@ -35,7 +38,10 @@ class Post(Base):
 
 
 class Category(Base):
+    """For blog post categories"""
+    
     __tablename__ = "categories"
+    
     id = Column(Integer, primary_key=True, autoincrement="auto", index=True)
     post_id = Column(Integer, ForeignKey("posts.id"))
     title = Column(String(length=100), index=True)

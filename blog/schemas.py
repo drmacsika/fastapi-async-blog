@@ -3,22 +3,23 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-
+"""Base fields for blog post category."""
 class CategoryBase(BaseModel):
     title: str
     description: Optional[str] = None
     
-
+"""Fields for creating blog post category."""
 class CreateCategory(CategoryBase):
     ...
     
-
+"""Fields for updating blog post category."""
 class UpdateCategory(CategoryBase):
     post_id: int
     slug: str
     active: bool
     created: datetime
 
+"""Response for blog post category."""
 class Category(CategoryBase):
     id: int
     post_id: int
@@ -30,7 +31,7 @@ class Category(CategoryBase):
     class Config:
         orm_mode = True
 
-
+"""Base fields for blog posts."""
 class PostBase(BaseModel):
     title: str
     description: Optional[str] = None
@@ -38,9 +39,11 @@ class PostBase(BaseModel):
     content: Optional[str] = ...
     categories: List[Category] = None
 
+"""Fields for creating blog post."""
 class CreatePost(PostBase):
     ...
 
+"""Fields for updating blog post."""
 class UpdatePost(PostBase):
     slug: str
     read_length: int
@@ -48,6 +51,7 @@ class UpdatePost(PostBase):
     active: bool
     updated: datetime
 
+"""Response for blog post."""
 class Post(BaseModel):
     id: int
     slug: str
