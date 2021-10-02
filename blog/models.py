@@ -25,6 +25,12 @@ class Post(Base):
     # Relationships
     author = relationship("User", back_populates="articles")
     categories = relationship("Category", back_populates="post")
+    
+    def __repr__(self) -> str:
+        return "<Post %r>" % self.email
+    
+    def __str__(self) -> str:
+        return f"{self.email}"
 
 
 
@@ -41,3 +47,9 @@ class Category(Base):
     
     # Relationships
     post = relationship("Post", back_populates="categories")
+
+    def __repr__(self) -> str:
+        return "<Category %r>" % self.slug
+    
+    def __str__(self) -> str:
+        return f"{self.slug}"

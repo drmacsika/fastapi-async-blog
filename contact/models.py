@@ -17,3 +17,8 @@ class Contact(Base):
     status = Column(Boolean, default=True)
     created = Column(DateTime, server_default=func.now())
     
+    def __repr__(self) -> str:
+        return "<Contact %r>" % self.email
+    
+    def __str__(self) -> str:
+        return f"{self.email}"
