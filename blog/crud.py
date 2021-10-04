@@ -1,15 +1,47 @@
+from typing import Any
+
+from core.dependencies import slugify
+from fastapi import HTTPException, status
 from sqlalchemy import schema
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from blog.models import Category, Post
-from blog.schemas import *
+from blog.schemas import CreateCategory
 
 
-def create_category(category: CreateCategory, db: AsyncSession):
-    tag = db.query(Category).filter(Category.slug == category.)
-    
+async def create_category(category: CreateCategory, slug: str, db: AsyncSession) -> Any:
+    """
+    Create a new category if it does not already exist.
+    Use the slug field for unique constraints.
+    """
+    try:
+        tag = await db.query(Category).filter(Category.slug == slug)
+        tag: bool = await db.query(tag.exists())
+        if not tag:
+            tag = Category(**category, slug=slugify(category.title))
+            db.add(tag)
+            await db.commit()
+            await db.refresh(tag)
+            return tag
+        else:
+            raise HTTPException(status_code=400, detail = "This slug or title already exists.")
+    except IntegrityError as ie:
+        raise (ie.orig)
+    except SQLAlchemyError as se:
+        raise se
 
+async def get_categories(db: AsyncSession):
+    """
+    Get all categories.
+    """
+    try:
+        return db.Query(Category).all()
+    except IntegrityError as ie:
+        raise (ie.orig)
+    except SQLAlchemyError as se:
+        raise se
 
 
 
