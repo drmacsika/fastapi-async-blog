@@ -2,24 +2,28 @@ from typing import Any
 
 from core.dependencies import slugify
 from fastapi import HTTPException, status
-from sqlalchemy import schema
+from sqlalchemy import insert, schema
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 
 from blog.models import Category, Post
 from blog.schemas import CreateCategory
 
 
-async def create_category(category: CreateCategory, slug: str, db: AsyncSession) -> Any:
+async def post_category(category: CreateCategory, slug: str, db: AsyncSession) -> Any:
     """
     Create a new category if it does not already exist.
     Use the slug field for unique constraints.
     """
     try:
-        tag = await db.query(Category).filter(Category.slug == slug)
-        tag: bool = await db.query(tag.exists())
-        if not tag:
+        # tag = await db.query(Category).filter(Category.slug == slug)
+        # tag: bool = await db.query(tag.exists())
+        tag = select(Category).where(Category.slug == slug)
+        tag = await db.execute(tag)
+        tag = tag.scalar()
+        if tag is None:
             tag = Category(**category, slug=slugify(category.title))
             db.add(tag)
             await db.commit()
@@ -37,7 +41,8 @@ async def get_categories(db: AsyncSession):
     Get all categories.
     """
     try:
-        return db.Query(Category).all()
+        # return await db.Query(Category).all()
+        return db.execute(select(Category).scalars().all())
     except IntegrityError as ie:
         raise (ie.orig)
     except SQLAlchemyError as se:
@@ -52,22 +57,56 @@ async def get_categories(db: AsyncSession):
 
 
 
+# from sqlalchemy import update as sqlalchemy_update
+# class ModelAdmin:
+#     @classmethod
+#     async def create(cls, **kwargs):
+#         async_db_session.add(cls(**kwargs))
+#         await async_db_session.commit()
+#     @classmethod
+#     async def update(cls, id, **kwargs):
+#         query = (
+#             sqlalchemy_update(User)
+#             .where(User.id == id)
+#             .values(**kwargs)
+#             .execution_options(synchronize_session="fetch")
+#         )
+#         await async_db_session.execute(query)
+#         await async_db_session.commit()
+#     @classmethod
+#     async def get(cls, id):
+#         query = select(cls).where(cls.id == id)
+#         results = await async_db_session.execute(query)
+#         (result,) = results.one()
+#         return result
 
 
 
-# async def create_category(category: schemas.CreateCategory, db: AsyncSession):
-#     try:
-#         tag = await db.query(models.Category).filter(models.Category.slug == category.slug).first()
-#         if(tag is None):
-#             category = models.Category(**category.dict())
-#             db.add(category)
-#             await db.commit()
-#             await db.refresh(category)
-#             return category
-#         else:
-#             return f"Category with the slug \"{category.slug}\""
-#     except:
-#         ...
+# class ModelAdmin:
+#     @classmethod
+#     async def create(cls, **kwargs):
+#         async_db_session.add(cls(**kwargs))
+#         await async_db_session.commit()
+
+#     @classmethod
+#     async def update(cls, id, **kwargs):
+#         query = (
+#             sqlalchemy_update(cls)
+#             .where(cls.id == id)
+#             .values(**kwargs)
+#             .execution_options(synchronize_session="fetch")
+#         )
+
+#         await async_db_session.execute(query)
+#         await async_db_session.commit()
+
+#     @classmethod
+#     async def get(cls, id):
+#         query = select(cls).where(cls.id == id)
+#         results = await async_db_session.execute(query)
+#         (result,) = results.one()
+#         return result
+
 
 
 
