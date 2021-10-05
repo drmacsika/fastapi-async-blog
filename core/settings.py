@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     # db_password: Optional[str] = ""
     # SQLALCHEMY_DATABASE_URL = f"postgresql://{db_user}:{db_password}@postgresserver/db"
     Base = declarative_base()
+    
+    def __repr__(self) -> str:
+        return "<%r>" % "Settings"
+    
 
 
 @lru_cache
@@ -37,7 +41,7 @@ async def init_models():
 
 async def get_session() -> AsyncSession:
     async_session = sessionmaker(
-        settings.engine, class_=AsyncSession, expire_on_commit=False
+        engine, class_=AsyncSession, expire_on_commit=False
     )
     async with async_session() as session:
         yield session
