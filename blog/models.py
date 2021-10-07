@@ -45,7 +45,7 @@ class Category(Base):
     __tablename__ = "categories"
     
     id = Column(Integer, primary_key=True, autoincrement="auto", index=True)
-    post_id = Column(Integer, ForeignKey("posts.id"))
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=True)
     title = Column(String(length=100), index=True)
     description = Column(String(length=250), nullable=True)
     slug = Column(String(length=255), nullable=False, unique=True, index=True)
