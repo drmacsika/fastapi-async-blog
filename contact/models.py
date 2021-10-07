@@ -1,8 +1,7 @@
-from core.settings import settings
+from core.base import Base
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.sql import func
 
-Base = settings.Base
 
 class Contact(Base):
     """Get contact messages from visitors"""

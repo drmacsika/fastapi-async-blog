@@ -1,10 +1,13 @@
-from core.settings import settings
+from typing import TYPE_CHECKING
+
+from core.base import Base
 from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
                         Text)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-Base = settings.Base
+if TYPE_CHECKING:
+    from accounts.models import User
 
 class Post(Base):
     """Models for blog posts"""
@@ -23,7 +26,7 @@ class Post(Base):
     view_count = Column(Integer, default=0)
     active = Column(Boolean, default=False)
     created = Column(DateTime, server_default=func.now())
-    updated = Column(DateTime, onupdate=func.now())
+    updated = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
     # Relationships
     author = relationship("User", back_populates="articles")
@@ -34,7 +37,6 @@ class Post(Base):
     
     def __str__(self) -> str:
         return f"{self.email}"
-
 
 
 class Category(Base):
@@ -49,7 +51,7 @@ class Category(Base):
     slug = Column(String(length=255), nullable=False, unique=True, index=True)
     active = Column(Boolean, default=False)
     created = Column(DateTime, server_default=func.now())
-    updated = Column(DateTime, onupdate=func.now())
+    updated = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
     # Relationships
     post = relationship("Post", back_populates="categories")
