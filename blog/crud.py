@@ -2,10 +2,9 @@ from typing import Any
 
 from core.dependencies import slugify
 from fastapi import HTTPException, status
-from sqlalchemy import insert, schema
+from sqlalchemy import insert, schema, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 
 from blog.models import Category, Post
@@ -24,7 +23,7 @@ async def post_category(category: CreateCategory, slug: str, db: AsyncSession) -
         tag = await db.execute(tag)
         tag = tag.scalar()
         if tag is None:
-            tag = Category(**category, slug=slugify(category.title))
+            tag = Category(title=category.title, description=category.description, slug=slugify(category.title))
             db.add(tag)
             await db.commit()
             await db.refresh(tag)
@@ -36,13 +35,15 @@ async def post_category(category: CreateCategory, slug: str, db: AsyncSession) -
     except SQLAlchemyError as se:
         raise se
 
-async def get_categories(db: AsyncSession):
+async def get_categories(db: AsyncSession) -> list[Category]:
     """
     Get all categories.
     """
     try:
         # return await db.Query(Category).all()
-        return db.execute(select(Category).scalars().all())
+        # return db.execute(select(Category).scalars().all())
+        result = await db.execute(select(Category).order_by(Category.updated))
+        return result.scalars().all()
     except IntegrityError as ie:
         raise (ie.orig)
     except SQLAlchemyError as se:

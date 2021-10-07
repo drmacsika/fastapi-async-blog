@@ -3,8 +3,9 @@ from typing import Optional
 
 from pydantic import BaseSettings, EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
+from core.base import Base
 
 
 class Settings(BaseSettings):
@@ -12,11 +13,11 @@ class Settings(BaseSettings):
     # SUPERUSER: EmailStr = "drmacsika@gmail.com"
     
     # Database Settings
-    SQLALCHEMY_DATABASE_URI: Optional[str] = "sqlite+aiosqlite:///../db.sqlite3"
+    SQLALCHEMY_DATABASE_URI: Optional[str] = "sqlite+aiosqlite:///./db.sqlite3"
     # db_user: Optional[str] = ""
     # db_password: Optional[str] = ""
     # SQLALCHEMY_DATABASE_URL = f"postgresql://{db_user}:{db_password}@postgresserver/db"
-    Base = declarative_base()
+    
     
     def __repr__(self) -> str:
         return "<%r>" % "Settings"
@@ -36,7 +37,7 @@ async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession
 async def init_models():
     async with engine.begin() as conn:
         # await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(settings.Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all)
 
 
 async def get_session() -> AsyncSession:
