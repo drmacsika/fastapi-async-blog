@@ -1,8 +1,9 @@
 from typing import Any
+from unicodedata import category
 
 from core.dependencies import slugify
 from fastapi import HTTPException, status
-from sqlalchemy import insert, schema, select
+from sqlalchemy import insert, schema, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -11,14 +12,26 @@ from blog.models import Category, Post
 from blog.schemas import CreateCategory
 
 
+async def get_categories(db: AsyncSession) -> list[Category]:
+    """
+    Get all categories.
+    """
+    try:
+        result = select(Category).order_by(Category.updated)
+        result = await db.execute(result)
+        return result.scalars().all()    
+    except IntegrityError as ie:
+        raise (ie.orig)
+    except SQLAlchemyError as se:
+        raise se
+
+
 async def post_category(category: CreateCategory, slug: str, db: AsyncSession) -> Any:
     """
     Create a new category if it does not already exist.
     Use the slug field for unique constraints.
     """
     try:
-        # tag = await db.query(Category).filter(Category.slug == slug)
-        # tag: bool = await db.query(tag.exists())
         tag = select(Category).where(Category.slug == slug)
         tag = await db.execute(tag)
         tag = tag.scalar()
@@ -35,19 +48,7 @@ async def post_category(category: CreateCategory, slug: str, db: AsyncSession) -
     except SQLAlchemyError as se:
         raise se
 
-async def get_categories(db: AsyncSession) -> list[Category]:
-    """
-    Get all categories.
-    """
-    try:
-        # return await db.Query(Category).all()
-        # return db.execute(select(Category).scalars().all())
-        result = await db.execute(select(Category).order_by(Category.updated))
-        return result.scalars().all()
-    except IntegrityError as ie:
-        raise (ie.orig)
-    except SQLAlchemyError as se:
-        raise se
+# async update categories(category)
 
 
 

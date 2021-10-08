@@ -22,7 +22,7 @@ class UpdateCategory(CategoryBase):
 """Response for blog post category."""
 class Category(CategoryBase):
     id: int
-    post_id: int
+    post_id: Optional[int] = None
     slug: str
     active: bool
     created: datetime
@@ -45,7 +45,7 @@ class CreatePost(PostBase):
 
 """Fields for updating blog post."""
 class UpdatePost(PostBase):
-    slug: str
+    slug: Optional[str] = None
     read_length: int
     view_count: int
     active: bool
@@ -63,3 +63,7 @@ class Post(BaseModel):
     
     class Config:
         orm_mode = True
+
+
+
+
