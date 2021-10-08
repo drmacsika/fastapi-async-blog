@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from blog.models import Category, Post
-from blog.schemas import CreateCategory
+from blog.schemas import CreateCategory, UpdateCategory
 
 
 async def get_categories(db: AsyncSession) -> list[Category]:
@@ -42,15 +42,31 @@ async def post_category(category: CreateCategory, slug: str, db: AsyncSession) -
             await db.refresh(tag)
             return tag
         else:
-            raise HTTPException(status_code=400, detail = "This slug or title already exists.")
+            raise HTTPException(status_code=400, detail = "A category with this slug already exists.")
     except IntegrityError as ie:
         raise (ie.orig)
     except SQLAlchemyError as se:
         raise se
 
-# async update categories(category)
+async def put_category(category: UpdateCategory, slug: str, db:AsyncSession):
+    try:
+        query = select(Category).where(Category.slug == slug)
+        query = await db.execute(query)
+        query = query.scalar()
+        if query:
+            query = update(Category).where(Category.slug == slug).values(category).execution_options(synchronize_session="fetch")
+            await db.execute(query)
+            await db.commit()
+            return query
+        else:
+            raise HTTPException(status_code=404, detail = "This post does not exists.")
+    except IntegrityError as ie:
+        raise (ie.orig)
+    except SQLAlchemyError as se:
+        raise se
+        
 
-
+    
 
 
 
@@ -102,12 +118,6 @@ async def post_category(category: CreateCategory, slug: str, db: AsyncSession) -
 #         await async_db_session.execute(query)
 #         await async_db_session.commit()
 
-#     @classmethod
-#     async def get(cls, id):
-#         query = select(cls).where(cls.id == id)
-#         results = await async_db_session.execute(query)
-#         (result,) = results.one()
-#         return result
 
 
 
@@ -139,70 +149,3 @@ async def post_category(category: CreateCategory, slug: str, db: AsyncSession) -
 
 
 
-
-# from fastapi import Depends, FastAPI
-# from sqlalchemy import select
-# from sqlmodel import Session
-
-# from app.db import get_session, init_db
-# from app.models import Song, SongCreate
-
-# app = FastAPI()
-
-
-# @app.get("/ping")
-# async def pong():
-#     return {"ping": "pong!"}
-
-
-# @app.get("/blog/", response_model=list[Song])
-# def get_songs(session: Session = Depends(get_session)):
-#     result = session.execute(select(Song))
-#     songs = result.scalars().all()
-#     return [Song(name=song.name, artist=song.artist, id=song.id) for song in songs]
-
-
-# @app.post("/songs")
-# def add_song(song: SongCreate, session: Session = Depends(get_session)):
-#     song = Song(name=song.name, artist=song.artist)
-#     session.add(song)
-#     session.commit()
-#     session.refresh(song)
-#     return song
-
-
-
-# from fastapi import Depends, FastAPI
-# from sqlalchemy.future import select
-# from sqlalchemy.ext.asyncio import AsyncSession
-
-# from app.db import get_session, init_db
-# from app.models import Song, SongCreate
-
-# app = FastAPI()
-
-
-# @app.on_event("startup")
-# async def on_startup():
-#     await init_db()
-
-
-# @app.get("/ping")
-# async def pong():
-#     return {"ping": "pong!"}
-
-
-# @app.get("/songs", response_model=list[Song])
-# async def get_songs(session: AsyncSession = Depends(get_session)):
-#     result = await session.execute(select(Song))
-#     songs = result.scalars().all()
-#     return [Song(name=song.name, artist=song.artist, id=song.id) for song in songs]
-
-
-# @app.post("/songs")
-# async def add_song(song: SongCreate, session: AsyncSession = Depends(get_session)):
-#     song = Song(name=song.name, artist=song.artist)
-#     session.add(song)
-#     await session.commit()
-#     await session.refresh(song)
-#     return song
