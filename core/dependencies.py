@@ -5,11 +5,24 @@ import string
 import unicodedata
 from datetime import datetime
 from functools import lru_cache
+from typing import Any
 
 import pyotp
-from fastapi import Depends
+from fastapi import Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.settings import settings
+
+
+async def check_existing_row_by_slug(cls, slug: str, db: AsyncSession, status_code: int, msg: str) -> Any:
+    try:
+        query = select(cls).where(cls.slug == slug)
+        query = await db.execute(query)
+        query = query.scalar()
+        return query
+    except:
+        raise HTTPException(status_code=status_code, detail=msg)
 
 
 def generate_hotp(email: str, settings: settings = Depends(settings)):
