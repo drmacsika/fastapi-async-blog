@@ -19,13 +19,15 @@ _errors = { "category": {
 }
 
 
-async def get_multiple_items(db: AsyncSession) -> list[Any]:
+
+
+async def get_multiple_items(cls: Any, db: AsyncSession) -> list[Any]:
     """
     Get all items. 
     May be modified in the future to account for optional query parameters.
     """
     try:
-        result = select(Category).order_by(Category.updated)
+        result = select(cls).order_by(cls.updated)
         result = await db.execute(result)
         return result.scalars().all()    
     except IntegrityError as ie:
@@ -84,6 +86,10 @@ async def update_item(*, item: Any, slug: str, db:AsyncSession, cls: Any) -> Any
 
 
 async def delete_item(*, item: Any, slug: str, cls: Any, db: AsyncSession) -> Any:
+    """
+    Delete item based on provided slug. Returns status code 410 
+    and success message for UX enhancement rather than rather
+    """
     await check_existing_row_by_slug(cls, slug, db, status_code=404, msg=_errors[cls.__name__.lower()][404])
     stmt = delete(cls).where(cls.slug == slug).execution_options(synchronize_session="fetch")
     
