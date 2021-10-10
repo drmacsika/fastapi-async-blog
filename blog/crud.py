@@ -18,7 +18,19 @@ _errors = { "category": {
     }
 }
 
-
+async def get_item(slug: str, cls: Any, db: AsyncSession) -> Any:
+    """
+    Get single item based on slug.
+    """
+    try:
+        query = select(cls).where(cls.slug == slug)
+        query = await db.execute(query)
+        return query.scalars.first()
+    except IntegrityError as ie:
+        raise ie.orig
+    except SQLAlchemyError as se:
+        raise se
+    
 
 
 async def get_multiple_items(cls: Any, db: AsyncSession) -> list[Any]:
