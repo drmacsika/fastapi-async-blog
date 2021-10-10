@@ -28,7 +28,7 @@ async def update_category(request: UpdateCategory, slug: str, db: AsyncSession =
     return await update_item(item=request, slug=slug, db=db, cls=Category)
     
 
-@router.delete("/blog/tag/delete/{slug}")
+@router.delete("/blog/tag/delete/{slug}", status_code=410)
 async def delete_category(request: UpdateCategory, slug: str, db: AsyncSession = Depends(get_session)):
     return await delete_item(item=request, slug=slug, cls=Category, db=db)
     # return {"Detail": "Successfully deleted."}
