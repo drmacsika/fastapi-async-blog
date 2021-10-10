@@ -5,7 +5,7 @@ from core.dependencies import (check_existing_row_by_slug, slugify,
                                unique_slug_generator)
 from fastapi import HTTPException
 from fastapi.exceptions import RequestValidationError
-from sqlalchemy import insert, select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -81,3 +81,24 @@ async def update_item(*, item: Any, slug: str, db:AsyncSession, cls: Any) -> Any
         raise HTTPException(status_code=500, detail="Internal Server Error")
     finally:
         await db.close()
+
+
+async def delete_item(*, item: Any, slug: str, cls: Any, db: AsyncSession) -> Any:
+    await check_existing_row_by_slug(cls, slug, db, status_code=404, msg=_errors[cls.__name__.lower()][404])
+    stmt = delete(cls).where(cls.slug == slug).execution_options(synchronize_session="fetch")
+    
+    try:
+        await db.execute(stmt)
+        await db.commit()
+        return {"Detail": "Successfully deleted!"}
+    except IntegrityError as ie:
+        await db.rollback()
+        raise ie.orig
+    except SQLAlchemyError as se:
+        await db.rollback()    
+        raise se
+    except RequestValidationError:
+        raise HTTPException(status_code=500, detail="Internal Server Error.")
+        
+    
+            
