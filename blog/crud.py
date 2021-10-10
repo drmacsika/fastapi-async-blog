@@ -1,151 +1,83 @@
 from typing import Any
 from unicodedata import category
 
-from core.dependencies import slugify
-from fastapi import HTTPException, status
-from sqlalchemy import insert, schema, select, update
+from core.dependencies import (check_existing_row_by_slug, slugify,
+                               unique_slug_generator)
+from fastapi import HTTPException
+from fastapi.exceptions import RequestValidationError
+from sqlalchemy import insert, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
 
 from blog.models import Category, Post
 from blog.schemas import CreateCategory, UpdateCategory
 
+_errors = { "category": {
+        400: "An item with this slug already exists.",
+        404: "Requested item does not exist."
+    }
+}
 
-async def get_categories(db: AsyncSession) -> list[Category]:
+
+async def get_multiple_items(db: AsyncSession) -> list[Any]:
     """
-    Get all categories.
+    Get all items. 
+    May be modified in the future to account for optional query parameters.
     """
     try:
         result = select(Category).order_by(Category.updated)
         result = await db.execute(result)
         return result.scalars().all()    
     except IntegrityError as ie:
-        raise (ie.orig)
+        raise ie.orig
     except SQLAlchemyError as se:
         raise se
 
 
-async def post_category(category: CreateCategory, slug: str, db: AsyncSession) -> Any:
+async def post_item(*, item: Any, db: AsyncSession, cls: Any) -> Any:
     """
-    Create a new category if it does not already exist.
-    Use the slug field for unique constraints.
+    Function for posting new item like post or category.
+    This checks the row for existing slug based on the title of the item.
+    and generates new slug if applicable.
     """
+    query = await check_existing_row_by_slug(cls, slugify(item.title), db)
+    slug = unique_slug_generator(query, value=item.title, new_slug=True)
+    stmt = cls(**item.dict(), slug=slug)
+    db.add(stmt)
     try:
-        tag = select(Category).where(Category.slug == slug)
-        tag = await db.execute(tag)
-        tag = tag.scalar()
-        if tag is None:
-            tag = Category(title=category.title, description=category.description, slug=slugify(category.title))
-            db.add(tag)
-            await db.commit()
-            await db.refresh(tag)
-            return tag
-        else:
-            raise HTTPException(status_code=400, detail = "A category with this slug already exists.")
+        await db.commit()
+        await db.refresh(stmt)
+        return stmt
+    except SQLAlchemyError as se:
+        await db.rollback()
+        raise se
     except IntegrityError as ie:
-        raise (ie.orig)
-    except SQLAlchemyError as se:
-        raise se
+        await db.rollback()
+        raise ie.orig
 
-async def put_category(category: UpdateCategory, slug: str, db:AsyncSession):
+
+async def update_item(*, item: Any, slug: str, db:AsyncSession, cls: Any) -> Any:
+    """
+    Function performs update method for arbitrary items like category or post.
+    - Checks for the existence of the row using the slug.
+    - cls.__name__.lower() gets the name lowercase case name of the class
+    - **item.dict() unpacks the values from pydantic models rather than pass
+    - individual keyword args.
+    """
+    query = await check_existing_row_by_slug(cls, slug, db, status_code=404, msg=_errors[cls.__name__.lower()][404])
+    stmt = update(cls).where(cls.slug == slug).values(**item.dict()).execution_options(synchronize_session="fetch")
     try:
-        query = select(Category).where(Category.slug == slug)
-        query = await db.execute(query)
-        query = query.scalar()
-        if query:
-            query = update(Category).where(Category.slug == slug).values(category).execution_options(synchronize_session="fetch")
-            await db.execute(query)
+        stmt = await db.execute(stmt)
+        try:
             await db.commit()
             return query
-        else:
-            raise HTTPException(status_code=404, detail = "This post does not exists.")
-    except IntegrityError as ie:
-        raise (ie.orig)
-    except SQLAlchemyError as se:
-        raise se
-        
-
-    
-
-
-
-
-
-
-
-
-# from sqlalchemy import update as sqlalchemy_update
-# class ModelAdmin:
-#     @classmethod
-#     async def create(cls, **kwargs):
-#         async_db_session.add(cls(**kwargs))
-#         await async_db_session.commit()
-#     @classmethod
-#     async def update(cls, id, **kwargs):
-#         query = (
-#             sqlalchemy_update(User)
-#             .where(User.id == id)
-#             .values(**kwargs)
-#             .execution_options(synchronize_session="fetch")
-#         )
-#         await async_db_session.execute(query)
-#         await async_db_session.commit()
-#     @classmethod
-#     async def get(cls, id):
-#         query = select(cls).where(cls.id == id)
-#         results = await async_db_session.execute(query)
-#         (result,) = results.one()
-#         return result
-
-
-
-# class ModelAdmin:
-#     @classmethod
-#     async def create(cls, **kwargs):
-#         async_db_session.add(cls(**kwargs))
-#         await async_db_session.commit()
-
-#     @classmethod
-#     async def update(cls, id, **kwargs):
-#         query = (
-#             sqlalchemy_update(cls)
-#             .where(cls.id == id)
-#             .values(**kwargs)
-#             .execution_options(synchronize_session="fetch")
-#         )
-
-#         await async_db_session.execute(query)
-#         await async_db_session.commit()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        except SQLAlchemyError as se:
+            await db.rollback()
+            raise se
+        except IntegrityError as ie:
+            await db.rollback()
+            raise HTTPException(status_code=500, detail="Internal Server Error")
+    except RequestValidationError:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    finally:
+        await db.close()

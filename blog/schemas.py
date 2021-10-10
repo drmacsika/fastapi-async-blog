@@ -20,7 +20,7 @@ class UpdateCategory(CategoryBase):
     created: datetime
 
 """Response for blog post category."""
-class Category(CategoryBase):
+class CategoryOut(CategoryBase):
     id: int
     post_id: Optional[int] = None
     slug: str
@@ -37,7 +37,7 @@ class PostBase(BaseModel):
     description: Optional[str] = None
     intro: Optional[str] = None
     content: Optional[str] = ...
-    categories: List[Category] = None
+    categories: List[CategoryOut] = None
 
 """Fields for creating blog post."""
 class CreatePost(PostBase):

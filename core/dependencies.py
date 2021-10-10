@@ -51,7 +51,9 @@ def verify_otp(email: str, token: str, counter: int):
 
 
 def random_string(size: int, chars: str = string.ascii_lowercase+string.digits) -> str:
-    """Generate random strings from a given size"""
+    """
+    Generate random strings from a given size
+    """
     return "".join(random.choices(chars, k = size))
 
 
@@ -76,6 +78,8 @@ def unique_slug_generator(slug, value = "", new_slug=False):
     This is generates a unique slug using your model slug value
     assuming there's a model with a slug field and 
     a title character (char) field.
+    If a slug exists, it generates a unique slug with the old and random
+    otherwise, it generates a new slug
     """
     if new_slug and slug is not None:
         return f"{slug}-{random_string(4)}"
