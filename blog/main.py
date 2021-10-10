@@ -6,11 +6,16 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from blog.crud import delete_item, get_multiple_items, post_item, update_item
+from blog.crud import (delete_item, get_item, get_multiple_items, post_item,
+                       update_item)
 from blog.models import Category
 from blog.schemas import CategoryOut, CreateCategory, UpdateCategory
 
 router = APIRouter()
+
+@router.get("/blog/tag/{slug}", response_model=CategoryOut)
+async def get_category(slug: str, db: AsyncSession = Depends(get_session)):
+    return await get_item(slug=slug, cls=Category, db=db)
 
 
 @router.get("/blog/tags", response_model=List[CategoryOut])
