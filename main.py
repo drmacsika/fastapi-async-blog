@@ -5,7 +5,7 @@ from core.settings import init_models
 
 app = FastAPI()
 
-app.include_router(blog_router.router, tags=["blog"])
+app.include_router(blog_router.router)
 
 @app.get("/", tags=["home"])
 async def home():
