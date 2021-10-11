@@ -52,7 +52,7 @@ class UpdatePost(PostBase):
     updated: datetime
 
 """Response for blog post."""
-class Post(BaseModel):
+class PostOut(BaseModel):
     id: int
     slug: str
     read_length: int

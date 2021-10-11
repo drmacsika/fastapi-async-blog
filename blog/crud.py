@@ -13,19 +13,27 @@ from blog.models import Category, Post
 from blog.schemas import CreateCategory, UpdateCategory
 
 _errors = { "category": {
-        400: "An item with this slug already exists.",
-        404: "Requested item does not exist."
+        400: "An category with this slug already exists.",
+        404: "Requested category does not exist."
+    },
+    "post": {
+        400: "A post with this slug already exists.",
+        404: "Requested post does not exist."
     }
 }
 
-async def get_item(slug: str, cls: Any, db: AsyncSession) -> Any:
+async def get_item(*, slug: str, cls: Any, db: AsyncSession) -> Any:
     """
     Get single item based on slug.
     """
     try:
         query = select(cls).where(cls.slug == slug)
         query = await db.execute(query)
-        return query.scalars.first()
+        query = query.scalars().first()
+        if query is not None:
+            return query
+        else:
+            raise HTTPException(status_code=404, detail=_errors[cls.__name__.lower()][404])
     except IntegrityError as ie:
         raise ie.orig
     except SQLAlchemyError as se:
@@ -33,7 +41,7 @@ async def get_item(slug: str, cls: Any, db: AsyncSession) -> Any:
     
 
 
-async def get_multiple_items(cls: Any, db: AsyncSession) -> list[Any]:
+async def get_multiple_items(*, cls: Any, db: AsyncSession) -> list[Any]:
     """
     Get all items. 
     May be modified in the future to account for optional query parameters.
