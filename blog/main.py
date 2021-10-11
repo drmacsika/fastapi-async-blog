@@ -1,10 +1,8 @@
 from typing import List
 
-from core.settings import get_session, init_models
+from core.settings import get_session
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
 
 from blog.crud import (delete_item, get_item, get_multiple_items, post_item,
                        update_item)

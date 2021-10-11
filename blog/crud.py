@@ -1,5 +1,4 @@
 from typing import Any
-from unicodedata import category
 
 from core.dependencies import (check_existing_row_by_slug, slugify,
                                unique_slug_generator)
@@ -8,9 +7,6 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from blog.models import Category, Post
-from blog.schemas import CreateCategory, UpdateCategory
 
 _errors = { "category": {
         400: "An category with this slug already exists.",

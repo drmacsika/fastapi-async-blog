@@ -1,14 +1,9 @@
-import datetime
-from typing import TYPE_CHECKING
-
 from core.base import Base
 from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, String,
                         Text)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-if TYPE_CHECKING:
-    from accounts.models import User
 
 class Post(Base):
     """Models for blog posts"""
@@ -41,7 +36,7 @@ class Post(Base):
 
 
 class Category(Base):
-    """For blog post categories"""
+    """Blog post categories or tags"""
     
     __tablename__ = "categories"
     
