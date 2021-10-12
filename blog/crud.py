@@ -1,22 +1,24 @@
-from typing import Any
+from typing import Any, List
 
 from core.dependencies import (check_existing_row_by_slug, slugify,
                                unique_slug_generator)
 from fastapi import HTTPException
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-_errors = { "category": {
-        400: "An category with this slug already exists.",
-        404: "Requested category does not exist."
-    },
+_errors = {"category": {
+    400: "An category with this slug already exists.",
+    404: "Requested category does not exist."
+},
     "post": {
         400: "A post with this slug already exists.",
         404: "Requested post does not exist."
-    }
 }
+}
+
 
 async def get_item(*, slug: str, cls: Any, db: AsyncSession) -> Any:
     """
@@ -29,23 +31,32 @@ async def get_item(*, slug: str, cls: Any, db: AsyncSession) -> Any:
         if query is not None:
             return query
         else:
-            raise HTTPException(status_code=404, detail=_errors[cls.__name__.lower()][404])
+            raise HTTPException(
+                status_code=404, detail=_errors[cls.__name__.lower()][404])
     except IntegrityError as ie:
         raise ie.orig
     except SQLAlchemyError as se:
         raise se
-    
 
 
-async def get_multiple_items(*, cls: Any, db: AsyncSession) -> list[Any]:
+async def get_multiple_items(*, cls: Any, db: AsyncSession) -> List[Any]:
     """
     Get all items. 
-    May be modified in the future to account for optional query parameters.
+    ??? May be modified in the future to account for optional query parameters.
     """
     try:
         result = select(cls).order_by(cls.updated)
         result = await db.execute(result)
-        return result.scalars().all()    
+        return result.scalars().all()
+        if result:
+            result = result.scalars().all()
+            if result:
+                print(result)
+                return result
+            else:
+                return [{"detail": "There are no categories."}]
+        else:
+            ...
     except IntegrityError as ie:
         raise ie.orig
     except SQLAlchemyError as se:
@@ -60,7 +71,8 @@ async def post_item(*, item: Any, db: AsyncSession, cls: Any) -> Any:
     """
     query = await check_existing_row_by_slug(cls, slugify(item.title), db)
     slug = unique_slug_generator(query, value=item.title, new_slug=True)
-    stmt = cls(**item.dict(), slug=slug)
+    item = jsonable_encoder(item)
+    stmt = cls(**item, slug=slug)
     db.add(stmt)
     try:
         await db.commit()
@@ -74,7 +86,7 @@ async def post_item(*, item: Any, db: AsyncSession, cls: Any) -> Any:
         raise ie.orig
 
 
-async def update_item(*, item: Any, slug: str, db:AsyncSession, cls: Any) -> Any:
+async def update_item(*, item: Any, slug: str, db: AsyncSession, cls: Any) -> Any:
     """
     Function performs update method for arbitrary items like category or post.
     - Checks for the existence of the row using the slug.
@@ -82,8 +94,10 @@ async def update_item(*, item: Any, slug: str, db:AsyncSession, cls: Any) -> Any
     - **item.dict() unpacks the values from pydantic models rather than pass
     - individual keyword args.
     """
+    item = jsonable_encoder(item)
     query = await check_existing_row_by_slug(cls, slug, db, status_code=404, msg=_errors[cls.__name__.lower()][404])
-    stmt = update(cls).where(cls.slug == slug).values(**item.dict()).execution_options(synchronize_session="fetch")
+    stmt = update(cls).where(cls.slug == slug).values(
+        **item).execution_options(synchronize_session="fetch")
     try:
         stmt = await db.execute(stmt)
         try:
@@ -94,7 +108,8 @@ async def update_item(*, item: Any, slug: str, db:AsyncSession, cls: Any) -> Any
             raise se
         except IntegrityError as ie:
             await db.rollback()
-            raise HTTPException(status_code=500, detail="Internal Server Error")
+            raise HTTPException(
+                status_code=500, detail="Internal Server Error")
     except RequestValidationError:
         raise HTTPException(status_code=500, detail="Internal Server Error")
     finally:
@@ -107,8 +122,9 @@ async def delete_item(*, item: Any, slug: str, cls: Any, db: AsyncSession) -> An
     and success message for UX enhancement rather than rather
     """
     await check_existing_row_by_slug(cls, slug, db, status_code=404, msg=_errors[cls.__name__.lower()][404])
-    stmt = delete(cls).where(cls.slug == slug).execution_options(synchronize_session="fetch")
-    
+    stmt = delete(cls).where(cls.slug == slug).execution_options(
+        synchronize_session="fetch")
+
     try:
         await db.execute(stmt)
         await db.commit()
@@ -117,10 +133,7 @@ async def delete_item(*, item: Any, slug: str, cls: Any, db: AsyncSession) -> An
         await db.rollback()
         raise ie.orig
     except SQLAlchemyError as se:
-        await db.rollback()    
+        await db.rollback()
         raise se
     except RequestValidationError:
         raise HTTPException(status_code=500, detail="Internal Server Error.")
-        
-    
-            
