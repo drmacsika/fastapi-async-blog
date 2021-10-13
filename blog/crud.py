@@ -5,6 +5,7 @@ from core.dependencies import (check_existing_row_by_slug, slugify,
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -48,15 +49,6 @@ async def get_multiple_items(*, cls: Any, db: AsyncSession) -> List[Any]:
         result = select(cls).order_by(cls.updated)
         result = await db.execute(result)
         return result.scalars().all()
-        if result:
-            result = result.scalars().all()
-            if result:
-                print(result)
-                return result
-            else:
-                return [{"detail": "There are no categories."}]
-        else:
-            ...
     except IntegrityError as ie:
         raise ie.orig
     except SQLAlchemyError as se:
@@ -71,7 +63,7 @@ async def post_item(*, item: Any, db: AsyncSession, cls: Any) -> Any:
     """
     query = await check_existing_row_by_slug(cls, slugify(item.title), db)
     slug = unique_slug_generator(query, value=item.title, new_slug=True)
-    item = jsonable_encoder(item)
+    item = jsonable_encoder(item, exclude=["slug"])
     stmt = cls(**item, slug=slug)
     db.add(stmt)
     try:
@@ -81,6 +73,8 @@ async def post_item(*, item: Any, db: AsyncSession, cls: Any) -> Any:
     except SQLAlchemyError as se:
         await db.rollback()
         raise se
+    except ValidationError as e:
+        raise e
     except IntegrityError as ie:
         await db.rollback()
         raise ie.orig
@@ -100,18 +94,19 @@ async def update_item(*, item: Any, slug: str, db: AsyncSession, cls: Any) -> An
         **item).execution_options(synchronize_session="fetch")
     try:
         stmt = await db.execute(stmt)
-        try:
-            await db.commit()
-            return query
-        except SQLAlchemyError as se:
-            await db.rollback()
-            raise se
-        except IntegrityError as ie:
-            await db.rollback()
-            raise HTTPException(
-                status_code=500, detail="Internal Server Error")
+        await db.commit()
+        return query
+    except SQLAlchemyError as se:
+        await db.rollback()
+        raise se
+    except IntegrityError as ie:
+        await db.rollback()
+        raise HTTPException(
+            status_code=500, detail="Internal Server Error")
     except RequestValidationError:
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    except ValidationError as e:
+        raise e
     finally:
         await db.close()
 
