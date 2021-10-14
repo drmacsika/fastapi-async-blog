@@ -24,18 +24,18 @@ class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema]):
         slug: str,
         db: AsyncSession) -> Optional[ModelType]:
         """Get single item."""
-        self.get_query = select(self.model).where(self.model.slug == slug)
-        self.get_query = await db.execute(self.get_query)
-        return self.get_query.scalars().first()
+        query = select(self.model).where(self.model.slug == slug)
+        query = await db.execute(query)
+        return query.scalars().first()
     
     async def get_multiple(
         self, *, db: AsyncSession, offset: int = 0,
         limit: int = 0) -> List[ModelType]:
         """get multiple items using a query limiting flag."""
-        self.get_queries = select(self.model).order_by(self.model.created)\
+        query = select(self.model).order_by(self.model.created)\
             .offset(offset).limit(limit)
-        self.get_queries = await db.execute(self.get_queries)
-        return self.get_queries.scalars().all()
+        query = await db.execute(query)
+        return query.scalars().all()
         
     async def create(self, *, obj_in: CreateSchema, db: AsyncSession, 
                     slug_field: str = None) -> ModelType:
@@ -49,7 +49,8 @@ class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema]):
     async def update(
         self, *, db_obj: ModelType, 
         obj_in: Union[UpdateSchema, Dict[str, Any]], 
-        db: AsyncSession
+        db: AsyncSession,
+        slug_field: str = None
         ) -> ModelType:
         """Update an item."""
         if isinstance(obj_in, dict):
