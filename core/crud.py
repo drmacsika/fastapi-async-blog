@@ -10,8 +10,9 @@ from core.base import Base
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchema = TypeVar("CreateSchema", bound=BaseModel)
 UpdateSchema = TypeVar("UpdateSchema", bound=BaseModel)
+SLUGTYPE = TypeVar("SLUGTYPE", "int", "str")
 
-class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema]):
+class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema, SLUGTYPE]):
     """
     Base class for all crud operations
     Methods to Create, Read, Update, Delete (CRUD).
