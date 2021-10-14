@@ -22,7 +22,7 @@ class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema, SLUGTYPE]):
     
     async def get(
         self,
-        slug: str,
+        slug: SLUGTYPE,
         db: AsyncSession) -> Optional[ModelType]:
         """Get single item."""
         query = select(self.model).where(self.model.slug == slug)
@@ -39,7 +39,7 @@ class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema, SLUGTYPE]):
         return query.scalars().all()
         
     async def create(self, *, obj_in: CreateSchema, db: AsyncSession, 
-                    slug_field: str = None) -> ModelType:
+                    slug_field: SLUGTYPE = None) -> ModelType:
         """Create an item."""
         stmt = self.model(jsonable_encoders(**obj_in))
         db.add(stmt)
@@ -51,7 +51,7 @@ class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema, SLUGTYPE]):
         self, *, db_obj: ModelType, 
         obj_in: Union[UpdateSchema, Dict[str, Any]], 
         db: AsyncSession,
-        slug_field: str = None
+        slug_field: SLUGTYPE = None
         ) -> ModelType:
         """Update an item."""
         if isinstance(obj_in, dict):
@@ -66,7 +66,7 @@ class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema, SLUGTYPE]):
         await db.refresh(db_obj)
         return db_obj
         
-    async def delete(self, *, slug: str, db: AsyncSession) -> ModelType:
+    async def delete(self, *, slug: SLUGTYPE, db: AsyncSession) -> ModelType:
         """Delete an item."""
         stmt = delete(self.model).where(self.model.slug == slug)\
             .executable_options(synchronize_session="fetch")
