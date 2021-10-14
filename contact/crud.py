@@ -13,6 +13,17 @@ SLUGTYPE = Union[int, str]
 
 class ContactCRUD(BaseCRUD[Contact, ContactCreate, ContactCreate, SLUGTYPE]):
     
+    async def create(
+        self, *, obj_in: ContactCreate,
+        db: AsyncSession, slug_field: SLUGTYPE = None
+        ) -> Contact:
+        try:
+            return await super().create(obj_in, db, slug_field=slug_field)
+        except IntegrityError as ie:
+            raise ie.orig
+        except SQLAlchemyError as se:
+            raise se
+    
     async def delete(self, *, slug: SLUGTYPE, db: AsyncSession) -> Contact:
         try:
             contact = self.get(slug=slug, db=db)
