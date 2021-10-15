@@ -30,10 +30,10 @@ class Post(Base):
     categories = relationship("Category", back_populates="post")
 
     def __repr__(self) -> str:
-        return "<Post %r>" % self.email
+        return "<Post %r>" % self.slug
 
     def __str__(self) -> str:
-        return f"{self.email}"
+        return f"{self.slug}"
 
 
 class Category(Base):
