@@ -2,6 +2,7 @@ from typing import List, Optional, Union
 
 from core.crud import BaseCRUD
 from fastapi import HTTPException
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,9 +13,15 @@ SLUGTYPE = Union[str, int]
 
 class ContactCRUD(BaseCRUD[Contact, ContactCreate, ContactCreate, SLUGTYPE]):
     
-    async def get(self, *, slug: SLUGTYPE, db: AsyncSession) -> Optional[Contact]:
+    async def get(
+        self, *,
+        slug: SLUGTYPE,
+        db: AsyncSession) -> Optional[Contact]:
+        """Get single item."""
         try:
-            contact = await super().get(slug=slug, db=db)
+            contact = select(Contact).where(Contact.id == slug)
+            contact = await db.execute(contact)
+            contact = contact.scalars().first()
             if not contact:
                 raise HTTPException(status_code=404, detail="Contact not found.")
             return contact
@@ -22,6 +29,7 @@ class ContactCRUD(BaseCRUD[Contact, ContactCreate, ContactCreate, SLUGTYPE]):
             raise ie.orig
         except SQLAlchemyError as se:
             raise se
+    
         
     async def get_multiple(
         self, *,
