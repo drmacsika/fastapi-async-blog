@@ -1,7 +1,8 @@
-from typing import Any, List
+from typing import Any, Dict, List, Optional, Union
 
-from core.dependencies import (check_existing_row_by_slug, slugify,
-                               unique_slug_generator)
+from core.crud import BaseCRUD
+from core.dependencies import (check_existing_row_by_slug, get_read_length,
+                               slugify, unique_slug_generator)
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -10,125 +11,101 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-_errors = {"category": {
-    400: "An category with this slug already exists.",
-    404: "Requested category does not exist."
-},
-    "post": {
-        400: "A post with this slug already exists.",
-        404: "Requested post does not exist."
-}
-}
+from blog.models import Category, Post
+from blog.schemas import CreateCategory, CreatePost, UpdateCategory, UpdatePost
+
+SLUGTYPE = Union[int, str]
+
+# _errors = {"category": {
+#     400: "An category with this slug already exists.",
+#     404: "Requested category does not exist."
+# },
+#     "post": {
+#         400: "A post with this slug already exists.",
+#         404: "Requested post does not exist."
+# }
+# }
 
 
-async def get_item(*, slug: str, cls: Any, db: AsyncSession) -> Any:
-    """
-    Get single item based on slug.
-    """
-    try:
-        query = select(cls).where(cls.slug == slug)
-        query = await db.execute(query)
-        query = query.scalars().first()
-        if query is not None:
-            return query
-        else:
-            raise HTTPException(
-                status_code=404, detail=_errors[cls.__name__.lower()][404])
-    except IntegrityError as ie:
-        raise ie.orig
-    except SQLAlchemyError as se:
-        raise se
 
 
-async def get_multiple_items(*, cls: Any, db: AsyncSession) -> List[Any]:
-    """
-    Get all items. 
-    ??? May be modified in the future to account for optional query parameters.
-    """
-    try:
-        result = select(cls).order_by(cls.updated)
-        result = await db.execute(result)
-        return result.scalars().all()
-    except IntegrityError as ie:
-        raise ie.orig
-    except SQLAlchemyError as se:
-        raise se
-
-
-async def post_item(*, item: Any, db: AsyncSession, cls: Any) -> Any:
-    """
-    Function for posting new item like post or category.
-    This checks the row for existing slug based on the title of the item.
-    and generates new slug if applicable.
-    """
-    query = await check_existing_row_by_slug(cls, slugify(item.title), db)
-    slug = unique_slug_generator(query, value=item.title, new_slug=True)
-    item = jsonable_encoder(item, exclude=["slug"])
-    stmt = cls(**item, slug=slug)
-    db.add(stmt)
-    try:
-        await db.commit()
-        await db.refresh(stmt)
-        return stmt
-    except SQLAlchemyError as se:
-        await db.rollback()
-        raise se
-    except ValidationError as e:
-        raise e
-    except IntegrityError as ie:
-        await db.rollback()
-        raise ie.orig
-
-
-async def update_item(*, item: Any, slug: str, db: AsyncSession, cls: Any) -> Any:
-    """
-    Function performs update method for arbitrary items like category or post.
-    - Checks for the existence of the row using the slug.
-    - cls.__name__.lower() gets the name lowercase case name of the class
-    - **item.dict() unpacks the values from pydantic models rather than pass
-    - individual keyword args.
-    """
-    item = jsonable_encoder(item)
-    query = await check_existing_row_by_slug(cls, slug, db, status_code=404, msg=_errors[cls.__name__.lower()][404])
-    stmt = update(cls).where(cls.slug == slug).values(
-        **item).execution_options(synchronize_session="fetch")
-    try:
-        stmt = await db.execute(stmt)
-        await db.commit()
-        return query
-    except SQLAlchemyError as se:
-        await db.rollback()
-        raise se
-    except IntegrityError as ie:
-        await db.rollback()
-        raise HTTPException(
-            status_code=500, detail="Internal Server Error")
-    except RequestValidationError:
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-    except ValidationError as e:
-        raise e
-    finally:
-        await db.close()
-
-
-async def delete_item(*, item: Any, slug: str, cls: Any, db: AsyncSession) -> Any:
-    """
-    Delete item based on provided slug. Returns status code 410 
-    and success message for UX enhancement rather than rather
-    """
-    await check_existing_row_by_slug(cls, slug, db, status_code=404, msg=_errors[cls.__name__.lower()][404])
-    stmt = delete(cls).where(cls.slug == slug).execution_options(
-        synchronize_session="fetch")
-
-    try:
-        await db.execute(stmt)
-        await db.commit()
-        return {"Detail": "Successfully deleted!"}
-    except IntegrityError as ie:
-        await db.rollback()
-        raise ie.orig
-    except SQLAlchemyError as se:
-        await db.rollback()
-        raise se
-    except RequestValidationError:
-        raise HTTPException(status_code=500, detail="Internal Server Error.")
+class PostCrud(BaseCRUD[Post, CreatePost, UpdatePost, SLUGTYPE]):
+    """CRUD class for Blog Posts"""
+    
+    async def get(self, slug: SLUGTYPE, db: AsyncSession) -> Optional[Post]:
+        """Get a single blog post"""
+        try:
+            post = await super().get(slug=slug, db=db)
+            if not post:
+                raise HTTPException(status_code=404, detail="Post not found.")
+            return post
+        except IntegrityError as ie:
+            raise ie.orig
+        except SQLAlchemyError as se:
+            raise se
+    
+    async def get_multiple(self, *, db: AsyncSession, offset: int = 0, limit: int = 100) -> List[Post]:
+        """Get multiple blog posts."""
+        try:
+            posts = await super().get_multiple(db=db, offset=offset, limit=limit)
+            if not posts:
+                raise HTTPException(status_code=404, detail="No posts available.")
+            return posts
+        except IntegrityError as ie:
+            raise ie.orig
+        except SQLAlchemyError as se:
+            raise se
+    
+    async def create(self, *, obj_in: CreatePost, db: AsyncSession) -> Post:
+        """Create a new blog post with an author an category"""
+        slug = unique_slug_generator(obj_in.title)
+        post = await super().get(slug=slug, db=db)
+        read_length = get_read_length(obj_in.content)
+        db_obj = jsonable_encoder(obj_in, exclude=["slug", "read_length"])
+        if post:
+            slug = unique_slug_generator(obj_in.title, new_slug=True)
+        try:
+            stmt = Post(**db_obj, slug=slug, read_length=read_length)
+            db.add(stmt)
+            await db.commit()
+            await db.refresh(stmt)
+            return stmt
+        except IntegrityError as ie:
+            raise ie.orig
+        except SQLAlchemyError as se:
+            raise se
+    
+    async def update(
+        self, *, db_obj: Post = None, obj_in: Union[UpdatePost, Dict[str, Any]],
+        db: AsyncSession, slug_field: SLUGTYPE = None) -> Post:
+        """Update blog post"""
+        db_obj = await self.get(slug=slug_field, db=db)
+        obj_in = jsonable_encoder(obj_in, exclude_unset=True)
+        try:
+            # if isinstance(obj_in, dict):
+            #     updated_data = obj_in
+            # else:
+            #     updated_data = obj_in.dict(exclude_unset=True)
+            # if updated_data["title"]:
+            #     new_slug = unique_slug_generator(updated_data["title"])
+            #     del updated_data["slug"]
+            #     updated_data["slug"] = new_slug           
+            return await super().update(db_obj=db_obj, obj_in=obj_in, db=db, slug_field=slug_field)
+        except IntegrityError as ie:
+            raise ie.orig
+        except SQLAlchemyError as se:
+            raise se
+    
+    async def delete(self, *, slug: SLUGTYPE, db: AsyncSession) -> Post:
+        """Delete a blog post."""
+        try:
+            await self.get(slug=slug, db=db)
+            return await super().delete(slug=slug, db=db)
+        except IntegrityError as ie:
+            raise ie.orig
+        except ValidationError as ve:
+            raise ve
+        except SQLAlchemyError as se:
+            raise se
+            
+post = PostCrud(Post)
