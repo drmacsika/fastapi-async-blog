@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr
 
@@ -22,7 +23,7 @@ class ContactOut(ContactBase):
     """
     For Contact response.
     """
-    id: int
+    id: Optional[int] = None
     status: bool = True
-    created: datetime
+    created: Optional[datetime] = None
     

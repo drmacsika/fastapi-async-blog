@@ -11,7 +11,7 @@ class Contact(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement="auto")
     firstname = Column(String(100), nullable=False)
     lastname = Column(String(100), nullable=False)
-    email = Column(String(255), index=True, nullable=False)
+    email = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
     status = Column(Boolean, default=True)
     created = Column(DateTime, server_default=func.now())

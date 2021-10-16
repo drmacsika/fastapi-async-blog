@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.expression import delete
 
 from contact.models import Contact
 from contact.schemas import ContactCreate
@@ -39,7 +40,7 @@ class ContactCRUD(BaseCRUD[Contact, ContactCreate, ContactCreate, SLUGTYPE]):
         try:
             contacts = await super().get_multiple(db=db, offset=offset, limit=limit)
             if not contacts:
-                raise HTTPException(status_code=404, detail="Contact not found.")
+                raise HTTPException(status_code=404, detail="Contacts not found.")
             return contacts
         except IntegrityError as ie:
             raise ie.orig
@@ -57,7 +58,11 @@ class ContactCRUD(BaseCRUD[Contact, ContactCreate, ContactCreate, SLUGTYPE]):
     async def delete(self, *, slug: SLUGTYPE, db: AsyncSession) -> Contact:
         try:
             await self.get(slug=slug, db=db)
-            return await super().delete(slug=slug, db=db)
+            stmt = delete(Contact).where(Contact.id == slug)\
+                .execution_options(synchronize_session="fetch")
+            await db.execute(stmt)
+            await db.commit()
+            return {"detail": "Deleted successfully!"}            
         except IntegrityError as ie:
             raise ie.orig
         except SQLAlchemyError as se:
