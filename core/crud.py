@@ -83,8 +83,7 @@ class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema, SLUGTYPE]):
         # await db.commit()
         # await db.refresh(db_obj)
         
-        item = jsonable_encoder(obj_in)
-        stmt = update(self.model).where(self.model.slug == slug_field).values(**item).execution_options(synchronize_session="fetch")
+        stmt = update(self.model).where(self.model.slug == slug_field).values(jsonable_encoder(obj_in)).execution_options(synchronize_session="fetch")
         stmt = await db.execute(stmt)
         await db.commit()
         return db_obj
