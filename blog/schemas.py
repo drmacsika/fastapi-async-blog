@@ -1,34 +1,71 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, validator
 
-"""Base fields for blog posts."""
+
+def confirm_title(value: str) -> str:
+    """
+    Validation to prevent empty title field.
+    Called by the helperfunction below;
+    """
+    if not value:
+        raise ValueError("Please provide a title.")
+    return value
+
+def confirm_slug(value: str) -> str:
+    """
+    Validation to prevent empty slug field.
+    Called by the helperfunction below;
+    """
+    if not value:
+        raise ValueError("Slug cannot be empty.")
+    return value
+    
+
 class PostBase(BaseModel):
+    """Base fields for blog posts."""
     title: str
     description: Optional[str] = None
     intro: Optional[str] = None
     content: Optional[str] = ...
-    category_id: Optional[int] = None
-    # categories: List[CategoryOut] = None
-
-"""Fields for creating blog post."""
-class CreatePost(PostBase):
-    ...
-
-"""Fields for updating blog post."""
-class UpdatePost(PostBase):
-    slug: Optional[str] = None
     read_length: int
+    category_id: Optional[int] = None
+    author_id: Optional[int] = None
+    
+    # Validation for title and slug
+    _check_title = validator("title", allow_reuse=True)(confirm_title)
+    
+    # @validator("title")
+    # def check_title_availability(cls, value):
+    #     if not value:
+    #         raise ValueError("Title cannot be empty.")
+
+class CreatePost(PostBase):
+    """
+    Fields for creating blog post.
+    """
+    ...
+    
+    
+class UpdatePost(PostBase):
+    """
+    Fields for updating blog post.
+    """
+    # slug: Optional[str] = None
     view_count: int
     active: bool
-    updated: datetime
+    # updated: datetime
+    
+    # _check_slug = validator("slug", allow_reuse=True)(confirm_slug)
 
-"""Response for blog post."""
-class PostOut(BaseModel):
+
+class PostOut(PostBase):
+    """
+    Response for blog post.
+    """
     id: int
     slug: str
-    read_length: int
     view_count: int
     active: bool
     created: datetime
@@ -38,40 +75,40 @@ class PostOut(BaseModel):
         orm_mode = True
 
 
-"""Base fields for blog post category."""
 class CategoryBase(BaseModel):
+    """
+    Base fields for blog post category.
+    """
     title: str
     description: Optional[str] = None
     
-    @validator("title")
-    def check_title_availability(cls, value):
-        if value == "":
-            raise ValueError('Title cannot be empty.')
-        return value
+    _confirm_title = validator("title", allow_reuse=True)(confirm_title)
+        
     
-    
-"""Fields for creating blog post category."""
 class CreateCategory(CategoryBase):
+    """
+    Fields for creating blog post category.
+    """
     ...
     
-"""Fields for updating blog post category."""
 class UpdateCategory(CategoryBase):
+    """
+    Fields for updating blog post category.
+    """
     slug: str
     active: bool
     
-    @validator("slug")
-    def check_slug_availability(cls, slg):
-        if slg == "":
-            raise ValueError('Slug cannot be empty.')
-        return slg
-    
+    _confirm_slug = validator("slug", allow_reuse=True)(confirm_slug)
 
-"""Response for blog post category."""
+    
 class CategoryOut(CategoryBase):
+    """
+    Response for blog post category.
+    """    
     id: int
     slug: str
     active: bool
-    # post: List[PostOut] = []
+    # post: Optional[List[PostOut]] = None
     updated: datetime
     
     class Config:
