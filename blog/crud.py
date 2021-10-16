@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional, Union
+from unicodedata import category
 
 from core.crud import BaseCRUD
 from core.dependencies import get_read_length, unique_slug_generator
@@ -92,4 +93,86 @@ class PostCrud(BaseCRUD[Post, CreatePost, UpdatePost, SLUGTYPE]):
         except SQLAlchemyError as se:
             raise se
             
+
+
+class CategoryCrud(BaseCRUD[Post, CreateCategory, UpdateCategory, SLUGTYPE]):
+    """CRUD class for Blog Categories or tags"""
+    
+    async def get(self, slug: SLUGTYPE, db: AsyncSession) -> Optional[Category]:
+        """Get a single blog category."""
+        try:
+            category = await super().get(slug=slug, db=db)
+            if not category:
+                raise HTTPException(status_code=404, detail="Category not found.")
+            return category
+        except IntegrityError as ie:
+            raise ie.orig
+        except SQLAlchemyError as se:
+            raise se
+    
+    async def get_multiple(self, *, db: AsyncSession, offset: int = 0, limit: int = 100) -> List[Category]:
+        """Get multiple blog categories."""
+        try:
+            categories = await super().get_multiple(db=db, offset=offset, limit=limit)
+            if not categories:
+                raise HTTPException(status_code=404, detail="No categories available.")
+            return categories
+        except IntegrityError as ie:
+            raise ie.orig
+        except SQLAlchemyError as se:
+            raise se
+    
+    async def create(self, *, obj_in: CreateCategory, db: AsyncSession) -> Category:
+        """Create a new blog category."""
+        slug = unique_slug_generator(obj_in.title)
+        category = await super().get(slug=slug, db=db)
+        db_obj = jsonable_encoder(obj_in, exclude=["slug"])
+        if category:
+            slug = unique_slug_generator(obj_in.title, new_slug=True)
+        try:
+            stmt = Category(**db_obj, slug=slug)
+            db.add(stmt)
+            await db.commit()
+            await db.refresh(stmt)
+            return stmt
+        except IntegrityError as ie:
+            raise ie.orig
+        except SQLAlchemyError as se:
+            raise se
+    
+    async def update(
+        self, *, db_obj: Category = None, obj_in: Union[UpdateCategory, Dict[str, Any]],
+        db: AsyncSession, slug_field: SLUGTYPE = None) -> Category:
+        """Update blog category"""
+        db_obj = await self.get(slug=slug_field, db=db)
+        obj_in = jsonable_encoder(obj_in, exclude_unset=True)
+        try:
+            # if isinstance(obj_in, dict):
+            #     updated_data = obj_in
+            # else:
+            #     updated_data = obj_in.dict(exclude_unset=True)
+            # if updated_data["title"]:
+            #     new_slug = unique_slug_generator(updated_data["title"])
+            #     del updated_data["slug"]
+            #     updated_data["slug"] = new_slug           
+            return await super().update(db_obj=db_obj, obj_in=obj_in, db=db, slug_field=slug_field)
+        except IntegrityError as ie:
+            raise ie.orig
+        except SQLAlchemyError as se:
+            raise se
+    
+    async def delete(self, *, slug: SLUGTYPE, db: AsyncSession) -> Category:
+        """Delete a blog category."""
+        try:
+            await self.get(slug=slug, db=db)
+            return await super().delete(slug=slug, db=db)
+        except IntegrityError as ie:
+            raise ie.orig
+        except ValidationError as ve:
+            raise ve
+        except SQLAlchemyError as se:
+            raise se
+            
+
 post = PostCrud(Post)
+category = CategoryCrud(Category)
