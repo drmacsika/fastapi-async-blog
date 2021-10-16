@@ -1,13 +1,10 @@
 from typing import Any, Dict, List, Optional, Union
 
 from core.crud import BaseCRUD
-from core.dependencies import (check_existing_row_by_slug, get_read_length,
-                               slugify, unique_slug_generator)
+from core.dependencies import get_read_length, unique_slug_generator
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
-from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,19 +12,6 @@ from blog.models import Category, Post
 from blog.schemas import CreateCategory, CreatePost, UpdateCategory, UpdatePost
 
 SLUGTYPE = Union[int, str]
-
-# _errors = {"category": {
-#     400: "An category with this slug already exists.",
-#     404: "Requested category does not exist."
-# },
-#     "post": {
-#         400: "A post with this slug already exists.",
-#         404: "Requested post does not exist."
-# }
-# }
-
-
-
 
 class PostCrud(BaseCRUD[Post, CreatePost, UpdatePost, SLUGTYPE]):
     """CRUD class for Blog Posts"""

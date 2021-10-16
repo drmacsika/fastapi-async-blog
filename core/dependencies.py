@@ -1,4 +1,5 @@
 import base64
+import math
 import random
 import re
 import string
@@ -73,7 +74,7 @@ def slugify(value, allow_unicode=False):
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 
-def unique_slug_generator(slug, value = "", new_slug=False):
+def unique_slug_generator(value, new_slug=False):
     """
     This is generates a unique slug using your model slug value
     assuming there's a model with a slug field and 
@@ -81,7 +82,20 @@ def unique_slug_generator(slug, value = "", new_slug=False):
     If a slug exists, it generates a unique slug with the old and random
     otherwise, it generates a new slug
     """
-    if new_slug and slug is not None:
-        return f"{slug}-{random_string(4)}"
-    else:
-        return slugify(value)
+    if new_slug:
+        return f"{slugify(value)}-{random_string(4)}"
+    return slugify(value)
+
+
+def count_words(content):
+    """Cont all the words received from a parameter."""
+    matching_words = re.findall(r'\w+', content)
+    count = len(matching_words)
+    return count
+
+
+def get_read_length(content):
+    """Get the read length by dividing with an average of 200wpm """
+    count = count_words(content)
+    read_length_min = math.ceil(count/200.0)
+    return int(read_length_min)
