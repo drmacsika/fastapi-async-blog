@@ -4,10 +4,6 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import (AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn,
                       validator)
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-
-from core.base import Base
 
 
 class Settings(BaseSettings):
@@ -94,35 +90,14 @@ class Settings(BaseSettings):
     #     return v
 
     
-    
     class Config:
         case_sensitive = True
     
-    
     def __repr__(self) -> str:
         return "<%r>" % "Settings"
-    
-
 
 @lru_cache
 def get_settings():
     return Settings()
 
 settings = get_settings()
-
-# Postgres DB meta settings
-engine = create_async_engine(settings.SQLALCHEMY_DATABASE_URI, echo = True)
-async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
-
-async def init_models():
-    async with engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
-
-
-async def get_session() -> AsyncSession:
-    async_session = sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
-    )
-    async with async_session() as session:
-        yield session
