@@ -1,4 +1,3 @@
-# from accounts import crud
 from accounts.crud import user
 from accounts.models import User
 from fastapi import Depends, HTTPException
