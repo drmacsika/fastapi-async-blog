@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional, Union
 
 from core.crud import BaseCRUD
-from core.security import get_password_hash, verify_password
+from core.utils import get_password_hash, verify_password
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoders
 from pydantic import EmailStr

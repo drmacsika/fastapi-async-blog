@@ -4,16 +4,46 @@ import random
 import re
 import string
 import unicodedata
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import lru_cache
-from typing import Any
+from typing import Any, Union
 
 import pyotp
 from fastapi import Depends, HTTPException
+from jose import jwt
+from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.settings import settings
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+
+def create_access_token(
+    subject: Union[str, Any], expires_delta: timedelta = None
+) -> str:
+    """Create a JWT access token."""
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+    to_encode = {"exp": expire, "sub": str(subject)}
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.PASSLIB_ALGORITHM)
+    return encoded_jwt
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a hashed password."""
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password: str) -> str:
+    """Get a hash of a plain password."""
+    return pwd_context.hash(password)
 
 
 async def check_existing_row_by_slug(cls, slug: str, db: AsyncSession, status_code: int = None, msg: str = None, **kwargs) -> Any:
