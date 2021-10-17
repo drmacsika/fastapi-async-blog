@@ -17,7 +17,11 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate]):
     """CRUD Function for getting User Accounts."""
     
     async def get(self, *, email: EmailStr, db: AsyncSession) -> Optional[User]:
-        """Get single user by provided email address."""
+        """
+        Get single user by provided email address.
+        We make a new query because the slug is the email and not a default
+        slug field as in the super() class.
+        """
         query = select(User).where(User.email == email)
         query = await db.execute(query)
         return query.scalars().first()
@@ -42,21 +46,17 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate]):
             raise se
         
     
-    async def update(self, *, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]], db: AsyncSession, slug_field: str = None) -> User:
+    async def update(self, *, obj_in: Union[UserUpdate, Dict[str, Any]], db: AsyncSession, slug_field: str = None) -> User:
         try:
             user = await self.get(email=slug_field)
-            if user:
-                if isinstance(obj_in, dict):
-                    updated_data = obj_in
-                else:
-                    updated_data = obj_in.dict(exclude_unset=True)
-                if updated_data["password"]:
-                    hashed_password = get_password_hash(updated_data["password"])
-                    del updated_data["password"]
-                    updated_data["password"] = hashed_password
-                return await super().update(db, db_obj=db_obj, obj_in=updated_data)
-            else:
+            if not user:
                 raise HTTPException(status_code=404, detail="User does not exist.")
+            if not isinstance(obj_in, dict):
+                obj_in = jsonable_encoders(obj_in, exclude_unset=True)
+            if obj_in["password"]:
+                hashed_password = get_password_hash(obj_in["password"])
+                obj_in.update({"password": hashed_password})
+            return await super().update(db, db_obj=user, obj_in=obj_in)
         except IntegrityError as ie:
             raise ie.orig
         except SQLAlchemyError as se:
