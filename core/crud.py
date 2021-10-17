@@ -40,11 +40,12 @@ class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema, SLUGTYPE]):
         
     async def create(self, *, obj_in: CreateSchema, db: AsyncSession) -> ModelType:
         """Create an item."""
-        stmt = self.model(jsonable_encoder(**obj_in))
+        obj = jsonable_encoder(obj_in)
+        stmt = self.model(**obj)
         db.add(stmt)
         await db.commit()
         await db.refresh(stmt)
-        return stmt
+        return obj_in
         
     async def update(
         self, *, db_obj: ModelType = None, 
@@ -82,8 +83,8 @@ class BaseCRUD(Generic[ModelType, CreateSchema, UpdateSchema, SLUGTYPE]):
         # db.add(db_obj)
         # await db.commit()
         # await db.refresh(db_obj)
-        
-        stmt = update(self.model).where(self.model.slug == slug_field).values(jsonable_encoder(obj_in)).execution_options(synchronize_session="fetch")
+        obj_in = jsonable_encoder(obj_in)
+        stmt = update(self.model).where(self.model.slug == slug_field).values(**obj_in).execution_options(synchronize_session="fetch")
         stmt = await db.execute(stmt)
         await db.commit()
         return db_obj
