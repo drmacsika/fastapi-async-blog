@@ -11,9 +11,32 @@ from typing import Any
 import pyotp
 from fastapi import Depends, HTTPException
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
+from core.base import Base
 from core.settings import settings
+
+# Postgres DB meta settings
+engine = create_async_engine(settings.SQLALCHEMY_DATABASE_URI, echo = True)
+async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+
+
+async def init_models():
+    async with engine.begin() as conn:
+        # await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def get_session() -> AsyncSession:
+    # try:
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with async_session() as session:
+        yield session
+    # finally:
+    #     db.close()
+
+
 
 
 async def check_existing_row_by_slug(cls, slug: str, db: AsyncSession, status_code: int = None, msg: str = None, **kwargs) -> Any:
@@ -76,7 +99,7 @@ def slugify(value, allow_unicode=False):
 
 def unique_slug_generator(value, new_slug=False):
     """
-    This is generates a unique slug using your model slug value
+    This generates a unique slug using your model slug value
     assuming there's a model with a slug field and 
     a title character (char) field.
     If a slug exists, it generates a unique slug with the old and random

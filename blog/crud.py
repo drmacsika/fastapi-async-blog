@@ -2,7 +2,7 @@ import re
 from typing import Any, Dict, List, Optional, Union
 
 from core.crud import BaseCRUD
-from core.dependencies import get_read_time, unique_slug_generator
+from core.utils import get_read_time, unique_slug_generator
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError

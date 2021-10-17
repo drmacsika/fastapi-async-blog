@@ -12,8 +12,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from accounts.models import User
 from accounts.schemas import UserCreate, UserUpdate
 
+SLUGTYPE = Union[str, int]
 
-class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate]):
+class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate, SLUGTYPE]):
     """CRUD Function for getting User Accounts."""
     
     async def get(self, *, email: EmailStr, db: AsyncSession) -> Optional[User]:

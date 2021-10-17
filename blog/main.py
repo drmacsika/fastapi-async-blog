@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from core.settings import get_session
+from core.dependencies import get_session
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import delete
