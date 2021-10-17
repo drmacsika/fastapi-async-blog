@@ -62,10 +62,10 @@ class PostCrud(BaseCRUD[Post, CreatePost, UpdatePost, SLUGTYPE]):
             raise se
     
     async def update(
-        self, *, db_obj: Post = None, obj_in: Union[UpdatePost, Dict[str, Any]],
+        self, *, obj_in: Union[UpdatePost, Dict[str, Any]],
         db: AsyncSession, slug_field: SLUGTYPE = None) -> Post:
         """Update blog post"""
-        db_obj = await self.get(slug=slug_field, db=db)
+        post = await self.get(slug=slug_field, db=db)
         try:
             if not isinstance(obj_in, dict):
                 obj_in = jsonable_encoder(obj_in, exclude_unset=True)
@@ -77,7 +77,7 @@ class PostCrud(BaseCRUD[Post, CreatePost, UpdatePost, SLUGTYPE]):
                 **obj_in, slug=slug_field).execution_options(synchronize_session="fetch")
             stmt = await db.execute(stmt)
             await db.commit()
-            return db_obj        
+            return post        
         except IntegrityError as ie:
             raise ie.orig
         except SQLAlchemyError as se:
