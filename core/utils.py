@@ -5,7 +5,6 @@ import re
 import string
 import unicodedata
 from datetime import datetime, timedelta
-from functools import lru_cache
 from typing import Any, Union
 
 import pyotp
@@ -18,7 +17,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.settings import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 
 def create_access_token(
