@@ -95,10 +95,10 @@ class UpdateCategory(CategoryBase):
     """
     Fields for updating blog post category.
     """
-    slug: str
+    # slug: str
     active: bool
     
-    _confirm_slug = validator("slug", allow_reuse=True)(confirm_slug)
+    # _confirm_slug = validator("slug", allow_reuse=True)(confirm_slug)
 
     
 class CategoryOut(CategoryBase):
@@ -108,7 +108,6 @@ class CategoryOut(CategoryBase):
     id: int
     slug: str
     active: bool
-    # post: Optional[List[PostOut]] = None
     updated: datetime
     
     class Config:

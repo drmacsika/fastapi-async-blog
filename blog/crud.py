@@ -1,5 +1,4 @@
 from typing import Any, Dict, List, Optional, Union
-from unicodedata import category
 
 from core.crud import BaseCRUD
 from core.dependencies import get_read_length, unique_slug_generator
@@ -34,7 +33,7 @@ class PostCrud(BaseCRUD[Post, CreatePost, UpdatePost, SLUGTYPE]):
         try:
             posts = await super().get_multiple(db=db, offset=offset, limit=limit)
             if not posts:
-                raise HTTPException(status_code=404, detail="No posts available.")
+                raise HTTPException(status_code=404, detail="No post available.")
             return posts
         except IntegrityError as ie:
             raise ie.orig
@@ -54,7 +53,7 @@ class PostCrud(BaseCRUD[Post, CreatePost, UpdatePost, SLUGTYPE]):
             db.add(stmt)
             await db.commit()
             await db.refresh(stmt)
-            return stmt
+            return db_obj
         except IntegrityError as ie:
             raise ie.orig
         except SQLAlchemyError as se:
@@ -115,7 +114,7 @@ class CategoryCrud(BaseCRUD[Post, CreateCategory, UpdateCategory, SLUGTYPE]):
         try:
             categories = await super().get_multiple(db=db, offset=offset, limit=limit)
             if not categories:
-                raise HTTPException(status_code=404, detail="No categories available.")
+                raise HTTPException(status_code=404, detail="No category available.")
             return categories
         except IntegrityError as ie:
             raise ie.orig
@@ -146,15 +145,7 @@ class CategoryCrud(BaseCRUD[Post, CreateCategory, UpdateCategory, SLUGTYPE]):
         """Update blog category"""
         db_obj = await self.get(slug=slug_field, db=db)
         obj_in = jsonable_encoder(obj_in, exclude_unset=True)
-        try:
-            # if isinstance(obj_in, dict):
-            #     updated_data = obj_in
-            # else:
-            #     updated_data = obj_in.dict(exclude_unset=True)
-            # if updated_data["title"]:
-            #     new_slug = unique_slug_generator(updated_data["title"])
-            #     del updated_data["slug"]
-            #     updated_data["slug"] = new_slug           
+        try:       
             return await super().update(db_obj=db_obj, obj_in=obj_in, db=db, slug_field=slug_field)
         except IntegrityError as ie:
             raise ie.orig
