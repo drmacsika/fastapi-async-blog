@@ -79,4 +79,4 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate, SLUGTYPE]):
         return user.admin
 
 
-crud = UserCRUD(User)
+user = UserCRUD(User)
