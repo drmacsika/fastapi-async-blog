@@ -7,7 +7,7 @@ from pydantic import BaseModel, validator
 def confirm_title(value: str) -> str:
     """
     Validation to prevent empty title field.
-    Called by the helperfunction below;
+    Called by the helper function below;
     """
     if not value:
         raise ValueError("Please provide a title.")
@@ -29,7 +29,7 @@ class PostBase(BaseModel):
     description: Optional[str] = None
     intro: Optional[str] = None
     content: Optional[str] = ...
-    read_length: int
+    read_time: int
     category_id: Optional[int] = None
     author_id: Optional[int] = None
     

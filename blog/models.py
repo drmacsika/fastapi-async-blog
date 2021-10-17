@@ -19,7 +19,7 @@ class Post(Base):
     content = Column(Text)
     post_image = Column(Text)
     slug = Column(String(length=255), nullable=False, unique=True, index=True)
-    read_length = Column(Integer, default=0)
+    read_time = Column(Integer, default=0)
     view_count = Column(Integer, default=0)
     active = Column(Boolean, default=False)
     created = Column(DateTime, server_default=func.now(), nullable=True)

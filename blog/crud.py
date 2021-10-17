@@ -1,10 +1,12 @@
+import re
 from typing import Any, Dict, List, Optional, Union
 
 from core.crud import BaseCRUD
-from core.dependencies import get_read_length, unique_slug_generator
+from core.dependencies import get_read_time, unique_slug_generator
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
+from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -44,12 +46,12 @@ class PostCrud(BaseCRUD[Post, CreatePost, UpdatePost, SLUGTYPE]):
         """Create a new blog post with an author an category"""
         slug = unique_slug_generator(obj_in.title)
         post = await super().get(slug=slug, db=db)
-        read_length = get_read_length(obj_in.content)
-        db_obj = jsonable_encoder(obj_in, exclude=["slug", "read_length"])
+        read_time = get_read_time(obj_in.content)
+        db_obj = jsonable_encoder(obj_in, exclude=["slug", "read_time"])
         if post:
             slug = unique_slug_generator(obj_in.title, new_slug=True)
         try:
-            stmt = Post(**db_obj, slug=slug, read_length=read_length)
+            stmt = Post(**db_obj, slug=slug, read_time=read_time)
             db.add(stmt)
             await db.commit()
             await db.refresh(stmt)
@@ -64,17 +66,18 @@ class PostCrud(BaseCRUD[Post, CreatePost, UpdatePost, SLUGTYPE]):
         db: AsyncSession, slug_field: SLUGTYPE = None) -> Post:
         """Update blog post"""
         db_obj = await self.get(slug=slug_field, db=db)
-        obj_in = jsonable_encoder(obj_in, exclude_unset=True)
         try:
-            # if isinstance(obj_in, dict):
-            #     updated_data = obj_in
-            # else:
-            #     updated_data = obj_in.dict(exclude_unset=True)
-            # if updated_data["title"]:
-            #     new_slug = unique_slug_generator(updated_data["title"])
-            #     del updated_data["slug"]
-            #     updated_data["slug"] = new_slug           
-            return await super().update(db_obj=db_obj, obj_in=obj_in, db=db, slug_field=slug_field)
+            if not isinstance(obj_in, dict):
+                obj_in = jsonable_encoder(obj_in, exclude_unset=True)
+                
+            if obj_in["read_time"] is not None:
+                obj_in.update({"read_time": get_read_time(obj_in["content"])})
+                
+            stmt = update(Post).where(Post.slug == slug_field).values(
+                **obj_in, slug=slug_field).execution_options(synchronize_session="fetch")
+            stmt = await db.execute(stmt)
+            await db.commit()
+            return db_obj        
         except IntegrityError as ie:
             raise ie.orig
         except SQLAlchemyError as se:
