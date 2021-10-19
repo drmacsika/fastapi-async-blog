@@ -1,5 +1,6 @@
 import secrets
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import (AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn,
@@ -7,7 +8,7 @@ from pydantic import (AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn,
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Archangel Macsika"
+    PROJECT_NAME: str = "Tech Blog"
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days
@@ -57,11 +58,12 @@ class Settings(BaseSettings):
     EMAILS_FROM_EMAIL: Optional[EmailStr] = None
     EMAILS_FROM_NAME: Optional[str] = None
     
-    @validator("EMAILS_FROM_NAME")
+    @validator("EMAILS_FROM_NAME", allow_reuse=True)
     def get_project_name(cls, v: Optional[str], values: Dict[str, Any]) -> str:
         if not v:
             return values["PROJECT_NAME"]
         return v
+    
     
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
     EMAIL_TEMPLATES_DIR: str = "/templates/build"
@@ -76,8 +78,8 @@ class Settings(BaseSettings):
         )
         
     EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
-    FIRST_SUPERUSER: EmailStr
-    FIRST_SUPERUSER_PASSWORD: str
+    FIRST_SUPERUSER: EmailStr = "admin@example.com"
+    FIRST_SUPERUSER_PASSWORD: str = "admin"
     USERS_OPEN_REGISTRATION: bool = False
     
     
