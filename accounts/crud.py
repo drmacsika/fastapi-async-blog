@@ -75,7 +75,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate, SLUGTYPE]):
             if obj_in["password"]:
                 hashed_password = get_password_hash(obj_in["password"])
                 obj_in.update({"password": hashed_password})
-            return await super().update(db, db_obj=user, obj_in=obj_in)
+            return await super().update(db=db, db_obj=user, obj_in=obj_in)
         except IntegrityError as ie:
             raise ie.orig
         except SQLAlchemyError as se:
@@ -84,7 +84,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate, SLUGTYPE]):
     async def authenticate(self, *, email: str, password: str, db: AsyncSession) -> Optional[User]:
         user = await self.get(email=email, db=db)
         if not user or not verify_password(password, user.password):
-            raise HTTPException(status_code=404, detail="Incorrect email or password.")
+            raise HTTPException(
+                status_code=404, detail="Incorrect email or password.")
         return user
 
     def is_active(self, user: User) -> bool:

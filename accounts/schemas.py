@@ -13,9 +13,7 @@ class UserBase(BaseModel):
     last_name: str
     username: str
     email: EmailStr
-    staff: bool = False
-    admin: bool = False
-    active: bool = False
+    
     
     
 class UserCreate(UserBase):
@@ -33,7 +31,7 @@ class UserUpdate(UserBase):
     active: bool = False
 
 
-class User(UserBase):
+class UserOut(UserBase):
     """
     Base fields for user response.
     """
@@ -41,12 +39,15 @@ class User(UserBase):
     # articles: List[Post] = []
     created: datetime
     updated: datetime
+    staff: bool = False
+    admin: bool = False
+    active: bool = False
     
     class Config:
         orm_mode = True
 
 
-class UserInDB(User):
+class UserInDB(UserOut):
     """
     Base fields for entering user details in the database.
     """
