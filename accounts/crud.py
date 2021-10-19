@@ -1,9 +1,11 @@
 from typing import Any, Dict, Optional, Union
 
 from core.crud import BaseCRUD
-from core.utils import get_password_hash, verify_password
+from core.settings import settings
+from core.utils import (get_password_hash, send_new_account_email,
+                        verify_password)
 from fastapi import HTTPException
-from fastapi.encoders import jsonable_encoders
+from fastapi.encoders import jsonable_encoder
 from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -27,16 +29,28 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate, SLUGTYPE]):
         query = await db.execute(query)
         return query.scalars().first()
     
+    async def get_by_id(self, id: int, db: AsyncSession) -> Optional[User]:
+        """Get a single user by id"""
+        query = select(User).where(User.id == id)
+        query = await db.execute(query)
+        return query.scalars().first()
+    
     async def create(self, *, obj_in: UserCreate, db: AsyncSession, slug_field: str = None) -> User:
         try:
-            user = await self.get(email=slug_field, db=db)
+            user = await self.get(email=obj_in.email, db=db)
             if not user:
                 user = User(
-                    jsonable_encoders(**obj_in),
+                    jsonable_encoder(**obj_in),
                     password=get_password_hash(obj_in.password)
                 )
                 db.add(user)
                 await db.commit()
+                if settings.EMAILS_ENABLED and obj_in.email:
+                    send_new_account_email(
+                        email_to=obj_in.email,
+                        username=obj_in.email, 
+                        password=obj_in.password
+                )
                 await db.refresh(user)
                 return user
             else:
@@ -47,13 +61,18 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate, SLUGTYPE]):
             raise se
         
     
-    async def update(self, *, obj_in: Union[UserUpdate, Dict[str, Any]], db: AsyncSession, slug_field: str = None) -> User:
+    async def update(
+        self, *,
+        obj_in: Union[UserUpdate, Dict[str, Any]], 
+        db: AsyncSession,
+        slug_field: str = None
+    ) -> User:
         try:
-            user = await self.get(email=slug_field)
+            user = await self.get(email=slug_field)    
             if not user:
                 raise HTTPException(status_code=404, detail="User does not exist.")
             if not isinstance(obj_in, dict):
-                obj_in = jsonable_encoders(obj_in, exclude_unset=True)
+                obj_in = jsonable_encoder(obj_in, exclude_unset=True)
             if obj_in["password"]:
                 hashed_password = get_password_hash(obj_in["password"])
                 obj_in.update({"password": hashed_password})
