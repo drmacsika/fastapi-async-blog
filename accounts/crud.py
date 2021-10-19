@@ -59,7 +59,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate, SLUGTYPE]):
             raise ie.orig
         except SQLAlchemyError as se:
             raise se
-        
     
     async def update(
         self, *,
