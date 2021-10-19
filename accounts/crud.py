@@ -1,9 +1,10 @@
+from datetime import timedelta
 from typing import Any, Dict, Optional, Union
 
 from core.crud import BaseCRUD
 from core.settings import settings
-from core.utils import (get_password_hash, send_new_account_email,
-                        verify_password)
+from core.utils import (create_access_token, get_password_hash,
+                        send_new_account_email, verify_password)
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import EmailStr
@@ -81,12 +82,26 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserUpdate, SLUGTYPE]):
         except SQLAlchemyError as se:
             raise se
         
-    async def authenticate(self, *, email: str, password: str, db: AsyncSession) -> Optional[User]:
+    async def authenticate(
+        self, *, email: str, password: str,
+        db: AsyncSession) -> Optional[User]:
+        """generate and access token to Authenticate a user"""
+        
         user = await self.get(email=email, db=db)
         if not user or not verify_password(password, user.password):
             raise HTTPException(
                 status_code=404, detail="Incorrect email or password.")
-        return user
+        elif not self.is_active(user):
+            raise HTTPException(status_code=400, detail="Inactive user")
+        access_token_expires = timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        return {
+            "access_token": create_access_token(
+                user.id, expires_delta=access_token_expires
+            ),
+            "token_type": "bearer",
+        }
+        
 
     def is_active(self, user: User) -> bool:
         return user.active
