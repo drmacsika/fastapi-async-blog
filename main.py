@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from accounts import auth as auth_router
 from accounts import main as account_router
 from blog import main as blog_router
 from contact import main as contact_router
@@ -9,6 +10,7 @@ app = FastAPI()
 app.include_router(blog_router.router)
 app.include_router(contact_router.router, tags=["Contact"])
 app.include_router(account_router.router, tags=["Users"])
+app.include_router(auth_router.router, tags=["Users Auth"])
 
 
 @app.get("/", tags=["Home"])
