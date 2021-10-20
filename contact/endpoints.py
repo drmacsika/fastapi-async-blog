@@ -9,7 +9,7 @@ from contact.schemas import ContactCreate, ContactOut
 
 router = APIRouter()
 
-@router.get("/contacts/", response_model=List[ContactOut])
+@router.get("/", response_model=List[ContactOut])
 async def get_all_contacts(
     offset: int = 0,
     limit: int = 100,
@@ -18,7 +18,7 @@ async def get_all_contacts(
     return await contact.get_multiple(db=db, offset=offset, limit=limit)
 
 
-@router.post("/contact/create/", status_code=201, response_model=ContactOut)
+@router.post("/", status_code=201, response_model=ContactOut)
 async def create_contact(
     request: ContactCreate,
     db: AsyncSession = Depends(get_session)) -> Any:
@@ -29,7 +29,7 @@ async def create_contact(
     return await contact.create(obj_in=request, db=db)
 
 
-@router.get("/contact/{id}")
+@router.get("/{id}/")
 async def get_contact(
     id: int, 
     db: AsyncSession = Depends(get_session)) -> Any:
@@ -37,7 +37,7 @@ async def get_contact(
     return await contact.get(slug=id, db=db)
 
 
-@router.delete("/contact/{id}/delete/")
+@router.delete("/{id}/")
 async def delete_contact(
     id: int,
     db: AsyncSession = Depends(get_session)) -> Any:

@@ -36,7 +36,7 @@ async def create_user(
 
     
 
-@router.put("/me", response_model=UserOut)
+@router.put("/me/", response_model=UserOut)
 async def update_user_me(
     db: AsyncSession = Depends(get_session),
     first_name: str = Body(None),
@@ -64,7 +64,7 @@ async def update_user_me(
     return await user.update(obj_in=user_in, db=db, slug_field=current_user)
     
     
-@router.get("/me", response_model=UserOut)
+@router.get("/me/", response_model=UserOut)
 def read_user_me(
     db: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_active_user),
@@ -75,7 +75,7 @@ def read_user_me(
     return current_user
 
 
-@router.post("/open", response_model=UserOut)
+@router.post("/open/", response_model=UserOut)
 async def create_user_open(
     request: UserCreate,
     db: AsyncSession = Depends(get_session)
@@ -91,7 +91,7 @@ async def create_user_open(
     return await user.create(obj_in=request, db=db)    
     
 
-@router.get("/{user_id}", response_model=UserOut)
+@router.get("/{user_id}/", response_model=UserOut)
 async def read_user_by_id(
     user_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -110,7 +110,7 @@ async def read_user_by_id(
     return user
 
 
-@router.put("/{user_id}", response_model=UserOut)
+@router.put("/{user_id}/", response_model=UserOut)
 async def update_user(
     user_id: int,
     user_in: UserUpdate,
