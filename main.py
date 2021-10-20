@@ -1,19 +1,21 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from accounts import auth as auth_router
-from accounts import main as account_router
-from blog import main as blog_router
-from contact import main as contact_router
+from core.api_routers import router as api_router
+from core.settings import settings
 
-app = FastAPI()
+app = FastAPI(
+    title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
+)
 
-app.include_router(blog_router.router)
-app.include_router(contact_router.router, tags=["Contact"])
-app.include_router(account_router.router, tags=["Users"])
-app.include_router(auth_router.router, tags=["Users Auth"])
+# Set all CORS enabled origins
+if settings.BACKEND_CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-
-@app.get("/", tags=["Home"])
-async def home():
-    return {"detail": "Hello from Archangel Macsika."}
-
+app.include_router(api_router, prefix=settings.API_V1_STR)
