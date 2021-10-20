@@ -14,7 +14,7 @@ from accounts.schemas import UserOut
 
 router = APIRouter()
 
-@router.post("/login/access-token", response_model=Token)
+@router.post("/login/access-token/", response_model=Token)
 async def login_access_token(
     db: AsyncSession = Depends(get_session),
     form_data: OAuth2PasswordRequestForm = Depends()
@@ -28,7 +28,7 @@ async def login_access_token(
         db=db
     )
 
-@router.post("/login/test-token", response_model=UserOut)
+@router.post("/login/test-token/", response_model=UserOut)
 def test_token(current_user: User = Depends(get_current_user)) -> Any:
     """
     Test access token
@@ -36,7 +36,7 @@ def test_token(current_user: User = Depends(get_current_user)) -> Any:
     return current_user
 
 
-@router.post("/password-recovery/{email}", response_model=Message)
+@router.post("/password-recovery/{email}/", response_model=Message)
 async def recover_password(email: str, db: AsyncSession = Depends(get_session)) -> Any:
     """
     Get a token to recover a lost or forgotten password.
