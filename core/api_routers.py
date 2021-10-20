@@ -6,10 +6,10 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-router.include_router(blog_router.router)
-router.include_router(contact_router.router, tags=["Contact"])
-router.include_router(accounts_router.router, tags=["Users"])
-router.include_router(auth_router.router, tags=["Users Auth"])
+router.include_router(blog_router)
+router.include_router(contact_router, tags=["Contact"])
+router.include_router(accounts_router, tags=["Users"])
+router.include_router(auth_router, tags=["Users Auth"])
 
 
 @router.get("/", tags=["Home"])

@@ -31,7 +31,7 @@ async def get_all_categories(
     return await category.get_multiple(db=db, offset=offset, limit=limit)
 
 
-@router.post("/blog/create/", status_code=201, response_model = PostOut, tags=["Blog Post"])
+@router.post("/blog/", status_code=201, response_model = PostOut, tags=["Blog Post"])
 async def create_post(
     request: CreatePost,
     db: AsyncSession = Depends(get_session)) -> Any:
@@ -42,7 +42,7 @@ async def create_post(
     return await post.create(obj_in=request, db=db)
 
 
-@router.post("/blog/tag/create/", status_code=201, response_model=CategoryOut, tags=["Blog Category"])
+@router.post("/blog/tag/", status_code=201, response_model=CategoryOut, tags=["Blog Category"])
 async def create_category(
     request: CreateCategory,
     db: AsyncSession = Depends(get_session)) -> Any:
@@ -65,7 +65,7 @@ async def get_category(slug: str, db: AsyncSession = Depends(get_session)) -> An
     return await category.get(slug=slug, db=db)
 
 
-@router.put("/blog/{slug}/update/", status_code=200, response_model=PostOut, tags=["Blog Post"])
+@router.put("/blog/{slug}/", status_code=200, response_model=PostOut, tags=["Blog Post"])
 async def update_post(
     request: UpdatePost,
     slug: str, db: AsyncSession = Depends(get_session)) -> Any:
@@ -73,7 +73,7 @@ async def update_post(
     return await post.update(obj_in=request, db=db, slug_field=slug)
 
 
-@router.put("/blog/tag/{slug}/update/", status_code=200, response_model=CategoryOut, tags=["Blog Category"])
+@router.put("/blog/tag/{slug}/", status_code=200, response_model=CategoryOut, tags=["Blog Category"])
 async def update_category(
     request: UpdateCategory, 
     slug: str, 
@@ -82,7 +82,7 @@ async def update_category(
     return await category.update(db_obj=Category, obj_in=request, db=db, slug_field=slug)
 
 
-@router.delete("/blog/{slug}/delete/", tags=["Blog Post"])
+@router.delete("/blog/{slug}/", tags=["Blog Post"])
 async def delete_post(
     slug: str,
     db: AsyncSession = Depends(get_session)) -> Any:
@@ -90,7 +90,7 @@ async def delete_post(
     return await post.delete(slug=slug, db=db)
     
 
-@router.delete("/blog/tag/{slug}/delete/", tags=["Blog Category"])
+@router.delete("/blog/tag/{slug}/", tags=["Blog Category"])
 async def delete_category(
     slug: str,
     db: AsyncSession = Depends(get_session)) -> Any:
