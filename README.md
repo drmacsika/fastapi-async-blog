@@ -2,6 +2,15 @@
 
 This is a set of asynchronous production-ready endpoints tested and built for blogs and portfolio websites.
 
+## Table of Contents:
+- [Screenshots](#screenshots)
+- [Tools](#tools)
+- [Features](#features)
+- [Installation and Usage](#installation)
+- [Contributing](#contributing)
+- [Credits](#credits)
+- [Additional Info](#additional-info)
+
 ![Blog Posts](https://github.com/drmacsika/fastapi-async-blog/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.16.png)
 
 ![Blog Category](https://github.com/drmacsika/fastapi-async-blog/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.28.png)
