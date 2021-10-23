@@ -15,7 +15,7 @@ This is a set of asynchronous production-ready endpoints tested and built for bl
 ## Tools
 
 - FastAPI
-- SQLAlchemy 2.0 Models using AsyncSession and Async DB Statements
+- SQLAlchemy 2.0 Models and ORM using AsyncSession and Async DB Statements
 - Alembic with automatic Models Migration
 - Pydantic with custom validation and Settings
 - OAuth2 Authentication
