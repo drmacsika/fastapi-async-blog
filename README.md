@@ -2,15 +2,15 @@
 
 This is a set of asynchronous production-ready endpoints tested and built for blogs and portfolio websites.
 
-![Blog Posts](https://github.com/drmacsika/am-backend/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.16.png)
+![Blog Posts](https://github.com/drmacsika/fastapi-async-blog/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.16.png)
 
-![Blog Category](https://github.com/drmacsika/am-backend/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.28.png)
+![Blog Category](https://github.com/drmacsika/fastapi-async-blog/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.28.png)
 
-![Contact](https://github.com/drmacsika/am-backend/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.39.png)
+![Contact](https://github.com/drmacsika/fastapi-async-blog/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.39.png)
 
-![User Accounts](https://github.com/drmacsika/am-backend/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.48.png)
+![User Accounts](https://github.com/drmacsika/fastapi-async-blog/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.48.png)
 
-![User Auth](https://github.com/drmacsika/am-backend/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.57.png)
+![User Auth](https://github.com/drmacsika/fastapi-async-blog/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.57.png)
 
 ## Tools
 
@@ -52,14 +52,7 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) for installation.
 ## Contributing
 
 Pull requests and contributions are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to follow the <a href="https://github.com/drmacsika/fastapi-async-blog/blob/master/CONTRIBUTING.md">guidelines</a> and update tests as appropriate.
-
-## Contributing
-
-Pull requests and contributions are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to follow the [guidelines](https://github.com/drmacsika/fastapi-async-blog/blob/master/CONTRIBUTING.md) and update tests as appropriate.
+Ensure to follow the [guidelines](https://github.com/drmacsika/fastapi-async-blog/blob/master/CONTRIBUTING.md) and update tests as appropriate.
 
 ## Credits
 
