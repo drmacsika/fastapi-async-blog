@@ -11,6 +11,8 @@ This is a set of asynchronous production-ready endpoints tested and built for bl
 - [Credits](#credits)
 - [Additional Info](#additional-info)
 
+## Images
+
 ![Blog Posts](https://github.com/drmacsika/fastapi-async-blog/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.16.png)
 
 ![Blog Category](https://github.com/drmacsika/fastapi-async-blog/blob/master/templates/Screenshot%202021-10-23%20at%2020.48.28.png)
