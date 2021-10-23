@@ -25,4 +25,4 @@ def create_random_category(db: AsyncSession) -> Category:
     title = random_lower_string()
     description = random_lower_string()
     obj_in = CreateCategory(title=title, description=description, id=id)
-    return post.create(db=db, obj_in=obj_in)
+    return category.create(db=db, obj_in=obj_in)
