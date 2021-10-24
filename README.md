@@ -1,6 +1,5 @@
 # ASYNC FASTAPI BLOG
-
-This is a set of asynchronous production-ready endpoints tested and built for blogs and portfolio websites.
+A set of production-ready asynchronous endpoints tested and built for blogs and portfolio websites.
 
 ## Table of Contents:
 - [Screenshots](#screenshots)
