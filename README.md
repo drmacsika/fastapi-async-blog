@@ -9,6 +9,7 @@ A set of production-ready asynchronous endpoints tested and built for blogs and 
 - [Contributing](#contributing)
 - [Credits](#credits)
 - [Additional Info](#additional-info)
+- [Contact Info](#contact-info)
 
 ## Screenshots
 
@@ -71,3 +72,7 @@ All thanks to Tiangolo, I found the [Project Generation - Template](https://gith
 ## Additional Info
 
 For an in-depth understanding of FastAPI or any of the tools used here including questions and collaborations, you can reach out to me.
+
+## Contact Info
+If you have any question or want to reach me directly, 
+[Contact Nsikak Imoh](https://nsikakimoh.com).
